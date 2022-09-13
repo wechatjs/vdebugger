@@ -4,7 +4,11 @@
 
 ## `debug`
 
-调试脚本。接受两个参数，分别是脚本字符串 `script` 和调试ID `debuggerId`。其中，脚本字符串可以是源码，也可以是 `transform` 接口返回的转换结果。而调试ID通常为脚本的URL。调试ID可选，不传时会当作临时脚本，分配随机的调试ID。该接口会返回执行函数 `run`，用于真正地执行脚本，因此可以在 `run` 调用之前使用 `setBreakpoint` 等接口编辑断点设置。当传入参数不合法或者当前环境不支持断点调试的时候，该接口会返回 `false`。
+调试脚本。接受两个参数，分别是脚本字符串 `script` 和调试ID `debuggerId`。
+
+其中，脚本字符串可以是源码，也可以是 `transform` 接口返回的转换结果。而调试ID通常为脚本的URL。调试ID可选，不传时会当作临时脚本，分配随机的调试ID。
+
+该接口会返回执行函数 `run`，用于真正地执行脚本，因此可以在 `run` 调用之前使用 `setBreakpoint` 等接口编辑断点设置。当传入参数不合法或者当前环境不支持断点调试的时候，该接口会返回 `false`。
 
 ```ts
 function debug(script: string, debuggerId?: string): (() => void) | false
@@ -97,9 +101,7 @@ function setExceptionPause(value: boolean): boolean
 function getPausedInfo(): PausedInfo | false
 
 interface PausedInfo { breakpointId?: number, reason?: string, data?: any, debuggerId: string, lineNumber: number, columnNumber: number, scopeChain: Scope[], scriptContent: string }
-
 interface Scope { eval: (expression: string) => any, name: string, callFrameId: number, callFrame?: CallFrame }
-
 interface CallFrame { debuggerId: string, lineNumber: number, columnNumber: number }
 ```
 
@@ -111,7 +113,6 @@ interface CallFrame { debuggerId: string, lineNumber: number, columnNumber: numb
 function getScopeChain(): Scope[]
 
 interface Scope { eval: (expression: string) => any, name: string, callFrameId: number, callFrame?: CallFrame }
-
 interface CallFrame { debuggerId: string, lineNumber: number, columnNumber: number }
 ```
 
@@ -161,14 +162,9 @@ interface EventListener {
   error: (errorInfo: ErrorInfo) => void,
   sandboxchange: (sandboxInfo: SandboxInfo) => void,
 }
-
 interface PausedInfo { breakpointId?: number, reason?: string, data?: any, debuggerId: string, lineNumber: number, columnNumber: number, scopeChain: Scope[], scriptContent: string }
-
 interface ErrorInfo { error: Error, scopeChain: Scope[] }
-
 interface SandboxInfo { enable: boolean }
-
 interface Scope { eval: (expression: string) => any, name: string, callFrameId: number, callFrame?: CallFrame }
-
 interface CallFrame { debuggerId: string, lineNumber: number, columnNumber: number }
 ```
