@@ -15,6 +15,15 @@
     "type": "git",
     "url": "https://github.com/wechatjs/vdebugger"
   },
+  "keywords": [
+    "vdebugger",
+    "debugger",
+    "debug",
+    "js",
+    "javascript",
+    "break",
+    "breakpoint"
+  ],
   "author": "siubaak",
   "license": "MIT",
   "dependencies": {
