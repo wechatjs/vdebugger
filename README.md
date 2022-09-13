@@ -2,7 +2,7 @@
 
 **English | [简体中文](./README_CN.md)**
 
-Front-End JavaScript Breakpoint Debugger.
+A Front-End JavaScript Breakpoint Debugger.
 
 ## Installation
 
@@ -36,7 +36,9 @@ a = 2; // break at line 3 later
 a = 3;
 a = 4;
 console.log(a); // output "4"
-`, './test.js'); // the second argument is debuggerId for identifing the script, which normally is the script url
+`, './test.js');
+// the second argument is debuggerId for identifing the script,
+// which normally is the script url
 
 vDebugger.setBreakpoint('./test.js', 3); // break at line 3
 
@@ -56,7 +58,7 @@ vDebugger.resume(); // output "4"
 `vDebugger` needs code transform for break, while transforming at runtime by default causes performance loss, and therefore, `vDebugger` provide a method called `transform` for code pre-transform at compilation.
 
 ```js
-// Pre-transform at compilation, and pass the result to vDebugger.debug at runtime
+// pre-transform at compilation, and pass the result to vDebugger.debug at runtime
 import vDebugger from 'vdebugger';
 
 const result = vDebugger.transform(`// here's line 1
@@ -65,16 +67,20 @@ a = 2; // break at line 3 later
 a = 3;
 a = 4;
 console.log(a); // output "4"
-`, './test.js'); // the second argument is debuggerId for identifing the script, which normally is the script url
+`, './test.js');
+// the second argument is debuggerId for identifing the script,
+// which normally is the script url
 ```
 
 Pass the transformed `result` to `vDebugger.debug` at runtime.
 
 ```js
-// Except for passing the transformed result to vDebugger.debug, runtime debugging has no difference from which without pre-transform
+// except for passing the transformed result to vDebugger.debug,
+// runtime debugging has no difference from which without pre-transform
 import vDebugger from 'vdebugger';
 
-const run = vDebugger.debug(result); // The result contains debuggerId, so the second argument is optional
+const run = vDebugger.debug(result);
+// the result contains debuggerId, so the second argument is optional
 
 vDebugger.setBreakpoint('./test.js', 3); // break at line 3
 
@@ -98,7 +104,7 @@ $ npm start
 ## Testing
 
 ```bash
-$ npm run test
+$ npm test
 ```
 
 ## Documentation

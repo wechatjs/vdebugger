@@ -90,6 +90,18 @@ vDebugger.evaluate('console.log(a)'); // 输出 2
 vDebugger.resume(); // 输出 4
 ```
 
+## 开发
+
+```bash
+$ npm start
+```
+
+## 测试
+
+```bash
+$ npm test
+```
+
 ## 文档
 
 - [接口文档](./docs/API_CN.md)
