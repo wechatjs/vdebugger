@@ -14,7 +14,7 @@
     "type": "git",
     "url": "https://github.com/wechatjs/vdebugger"
   },
-  "author": "",
+  "author": "siubaak",
   "license": "MIT",
   "dependencies": {
     "acorn-walk": "^8.2.0",
