@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+  <title>Dev Page</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="./dist/vdebugger.js"></script>
+  <script>
+    window.debugFile = 'https://react.test/index.js';
+    (async () => {
+      const res = await fetch('https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js');
+      const res2 = await fetch('https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js');
+      const res3 = await fetch('https://cdn.jsdelivr.net/npm/vconsole@3.14.6/dist/vconsole.min.js');
+      const script = await res.text();
+      const script2 = await res2.text();
+      const script3 = await res3.text();
+      vDebugger.debug(script, 'https://react.test/react.js')();
+      vDebugger.debug(script2, 'https://react.test/react-dom.js')();
+      vDebugger.debug(script3, 'https://react.test/vconsole.js')();
+      vDebugger.debug(
+        "function App() {\n" +
+        "  const [color, setColor] = React.useState(false);\n" +
+        "  const boxStyle = { height: '100px', border: '1px solid red', background: color ? 'blue' : 'white' };\n" +
+        "  const onClick = () => {\n" +
+        "    setColor(c => !c);\n" +
+        "    alert(!color);\n" +
+        "  };\n" +
+        "  return React.createElement('div', null, React.createElement('div', {\n" +
+        "    id: 'box', className: 'box', style: boxStyle, onClick\n" +
+        "  }));\n" +
+        "}\n" +
+        "ReactDOM.createRoot(document.getElementById('app')).render(React.createElement(App));", window.debugFile
+      )();
+    })();
+  </script>
+  <script>
+    (function () {
+      const panel = document.createElement('div');
+      panel.style.cssText = 'background: #f7f7f7; padding: 12px; position: fixed; bottom: 0; left: 0; right: 0';
+      panel.innerHTML = '<div style="display: flex">' +
+          '<input id="debug_file" style="flex: 4; margin-right: 2px" placeholder="File" value="' + window.debugFile + '">' +
+          '<input id="debug_line" style="flex: 1; margin-right: 2px; min-width: 24px" placeholder="Line" value="6">' +
+          '<button id="debug_break" style="flex: 1; margin-right: 2px">Break</button>' +
+          '<button id="debug_resume" style="flex: 1" disabled>Resume</button>' +
+        '</div>' +
+        '<div id="debug_bplist" style="font-size: 14px; max-height: 240px; padding-bottom: 16px; overflow: scroll">' +
+        '</div>' +
+        '<div style="display: flex">' +
+          '<input id="debug_expr" style="flex: 4; margin-right: 2px" placeholder="Expression" value="color">' +
+          '<button id="debug_eval" style="flex: 1">Eval</button>' +
+        '</div>' +
+        '<div id="debug_console" style="border-radius: 2px; background: white; font-size: 14px; margin-bottom: 16px; margin-top: 4px; min-height: 20px; max-height: 60px; padding: 2px 6px; overflow: scroll">' +
+        '</div>';
+      document.body.insertBefore(panel, document.body.firstChild);
+      let fileStr = window.debugFile, lineStr = '6', exprStr = 'color';
+      document.getElementById('debug_file').addEventListener('input', (e) => fileStr = e.target.value);
+      document.getElementById('debug_line').addEventListener('input', (e) => lineStr = e.target.value);
+      document.getElementById('debug_expr').addEventListener('input', (e) => exprStr = e.target.value);
+      document.getElementById('debug_break').addEventListener('click', () => {
+        const p = vDebugger.setBreakpoint(fileStr, lineStr * 1);
+        const id = 'debug_bp' + p.id;
+        if (!document.getElementById(id)) {
+          const n = document.createElement('div');
+          const s = vDebugger.getScriptContent(fileStr);
+          const sl = s.split('\n');
+          n.id = 'debug_bp' + p.id;
+          n.style.cssText = 'margin-top: 4px; padding: 2px 6px; border-radius: 2px; background: white';
+          n.innerHTML = '<div>' + fileStr + ' - ' + p.lineNumber + '</div>' +
+            '<div id="debug_bp' + p.id + '_detail" style="display: none; word-break: break-all"><br/>' +
+              '-' + sl[p.lineNumber - 3].replace(/\s/g, '&nbsp;') + '<br/>' +
+              '-' + sl[p.lineNumber - 2].replace(/\s/g, '&nbsp;') + '<br/>' +
+              '*' + sl[p.lineNumber - 1].replace(/\s/g, '&nbsp;') + '<br/>' +
+              '-' + sl[p.lineNumber].replace(/\s/g, '&nbsp;') + '<br/>' +
+              '-' + sl[p.lineNumber + 1].replace(/\s/g, '&nbsp;') + '<br/>' +
+            '</div>';
+          n.addEventListener('click', () => {
+            n.remove();
+            vDebugger.removeBreakpoint(p.id);
+          });
+          document.getElementById('debug_bplist').appendChild(n);
+        }
+      });
+      document.getElementById('debug_resume').addEventListener('click', () => vDebugger.resume());
+      document.getElementById('debug_eval').addEventListener('click', () => {
+        vDebugger.runInSkipOver(() => {
+          if (exprStr) {
+            const el = document.getElementById('debug_console');
+            try {
+              el.innerText = vDebugger.evaluate(exprStr);
+              el.style.color = null;
+            } catch (err) {
+              el.innerText = err.toString();
+              el.style.color = '#fa5151';
+            }
+          }
+        });
+      });
+      vDebugger.addEventListener('paused', (pausedInfo) => {
+        document.getElementById('debug_resume').disabled = false;
+        document.getElementById('debug_bp' + pausedInfo.breakpointId).style.background = '#fa5151';
+        document.getElementById('debug_bp' + pausedInfo.breakpointId).style.color = 'white';
+        document.getElementById('debug_bp' + pausedInfo.breakpointId + '_detail').style.display = null;
+      });
+      vDebugger.addEventListener('resumed', () => {
+        document.getElementById('debug_resume').disabled = true;
+        Array.from(document.getElementById('debug_bplist').children).forEach((el) => {
+          el.style.background = 'white';
+          el.style.color = null;
+          document.getElementById(el.id + '_detail').style.display = 'none';
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
