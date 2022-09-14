@@ -4,6 +4,8 @@
 
 浏览器端JavaScript断点调试工具。
 
+[点击查看Demo。](https://jsbin.com/jibezuvohe/edit?js,console)
+
 ## 安装
 
 `vDebugger` 需要ES2015的支持，因为使用到了 [`Generator`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator)。

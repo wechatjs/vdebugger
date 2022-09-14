@@ -4,6 +4,8 @@
 
 A Front-End JavaScript Breakpoint Debugger.
 
+[Try `vDebugger` on playground.](https://jsbin.com/jibezuvohe/edit?js,console)
+
 ## Installation
 
 `vDebugger` requires ES2015 for [`Generator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator) support.
