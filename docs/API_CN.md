@@ -33,7 +33,7 @@ function transform(script: string, debuggerId?: string): string | false
 1. 不传时默认直接继续执行；
 2. 传 `stepInto` 时遇到子函数就进入并且继续单步执行；
 3. 传 `stepOver` 时遇到子函数时不会进入子函数内单步执行；
-4. 传 `stepOut` 时执行完当前函数剩余部分，并返回到上一层函数；
+4. 传 `stepOut` 时执行完当前函数剩余部分，并返回到上一层函数。
 
 该接口返回的布尔值用于标记是否恢复成功。
 
@@ -105,7 +105,7 @@ function setExceptionPause(value: boolean): boolean
 
 其中，作用域链 `scopeChain` 包括全局、函数和块级作用域，可通过是否有调用帧 `callFrame` 字段来判断是否是全局或函数作用域。过滤出作用域链中含有调用帧的作用域，即可获得调用栈。
 
-另外，调用帧 `callFrame` 中的 `callFrameId` 可传给 `evaluate` 接口用于在特定作用域下执行脚本。
+另外，调用帧 `callFrame` 中的 `callFrameId` 可传给 `evaluate` 接口用于在特定作用域下执行表达式。
 
 ```ts
 function getPausedInfo(): PausedInfo | false
@@ -136,7 +136,11 @@ function getScriptContent(debuggerId: string): string
 
 ## `runInNativeEnv`
 
-在原生环境中执行。调试器默认将脚本在内部的沙盒中运行，该接口用于在调试过程中，执行需要在原生环境下运行的代码。如果执行成功，该接口返回值为回调函数的返回值；如果执行失败，返回 `false`。
+在原生环境中执行。接受一个回调函数作为参数。
+
+调试器默认将脚本在内部的沙盒中运行，该接口用于在调试过程中，执行需要在原生环境下运行的代码。
+
+如果执行成功，该接口返回值为回调函数的返回值；如果执行失败，返回 `false`。
 
 ```ts
 function runInNativeEnv(callback: () => Return): Return | false
@@ -144,7 +148,11 @@ function runInNativeEnv(callback: () => Return): Return | false
 
 ## `runInSkipOver`
 
-跳过断点执行。当命中断点暂停时，如果执行调试脚本，会被阻塞直至断点恢复，该接口用于在暂停情况下，不阻塞直接执行调试脚本，常用于通过 `evaluate` 接口调用调试脚本时，不阻塞执行以获取相应作用域中的值。如果执行成功，该接口返回值为回调函数的返回值；如果执行失败，返回 `false`。
+跳过断点执行。接受一个回调函数作为参数。
+
+当命中断点暂停时，如果执行调试脚本，会被阻塞直至断点恢复，该接口用于在暂停情况下，不阻塞直接执行调试脚本，常用于通过 `evaluate` 接口调用调试脚本时，不阻塞执行以获取相应作用域中的值。
+
+如果执行成功，该接口返回值为回调函数的返回值；如果执行失败，返回 `false`。
 
 ```ts
 function runInSkipOver(callback: () => Return): Return | false
@@ -152,7 +160,13 @@ function runInSkipOver(callback: () => Return): Return | false
 
 ## `setModuleRequest`
 
-设置模块请求函数。当需要import模块时，内部默认会使用fetch进行请求。如果在不支持fetch的环境使用，或者想自定义模块请求的行为（比如对请求结果进行缓存），可通过该接口进行设置。该接口接受一个请求函数 `request` 作为参数，并返回的布尔值告知是否设置成功。其中，请求函数 `request` 可接受一个模块地址 `importUrl` 作为入参，并要求返回一个 `Promise<string>` 包裹的模块脚本文本内容。而模块脚本文本内容可以是转换前的脚本源码字符串，也可以是通过 `transform` 接口转换后的脚本字符串。
+设置模块请求函数。接受一个请求函数作为参数，用于覆盖内部的默认请求函数。
+
+当需要import模块时，默认会使用fetch进行请求。如果在不支持fetch的环境使用，或者想自定义模块请求的行为（比如对请求结果进行缓存），可通过该接口进行设置。
+
+其中，请求函数 `request` 可接受一个模块地址 `importUrl` 作为入参，并要求返回一个 `Promise<string>` 包裹的模块脚本文本内容。而模块脚本文本内容可以是转换前的脚本源码字符串，也可以是通过 `transform` 接口转换后的脚本字符串。
+
+该接口返回的布尔值告知是否设置成功。
 
 ```ts
 function setModuleRequest(request: (importUrl: string) => Promise<string>): boolean
@@ -160,7 +174,16 @@ function setModuleRequest(request: (importUrl: string) => Promise<string>): bool
 
 ## `addEventListener` 和 `removeEventListener`
 
-添加或移除事件监听器，接受两个参数，分别是事件 `event` 和监听函数 `listener`。目前有四个事件，为暂停 `paused`、恢复 `resumed`、错误 `error` 和沙盒状态变化 `sandboxchange`。其中，暂停事件会返回断点相关信息，该信息与 `getPausedInfo` 的返回值一致；错误事件会返回错误相关信息，包括错误原因和作用域链；沙盒状态变化事件会返回沙盒相关信息，包括是否启用了沙盒。该接口返回的布尔值用于标记是否添加或移除事件监听器成功。
+添加或移除事件监听器，接受两个参数，分别是事件 `event` 和监听函数 `listener`。
+
+目前有四个事件，为暂停 `paused`、恢复 `resumed`、错误 `error` 和沙盒状态变化 `sandboxchange`:
+
+1. 暂停事件 `paused` 会返回断点相关信息，该信息与 `getPausedInfo` 的返回值一致；
+2. 恢复事件 `resumed` 没有返回值，用于通知执行恢复；
+3. 错误事件 `error` 会返回错误相关信息，包括错误原因和作用域链；
+4. 沙盒状态变化事件 `sandboxchange` 会返回沙盒相关信息，包括是否启用了沙盒。
+
+该接口返回的布尔值用于标记是否添加或移除事件监听器成功。
 
 ```ts
 function addEventListener<Event extends keyof EventListener>(event: Event, listener: EventListener[Event]): boolean
