@@ -182,7 +182,7 @@ This method returns a boolean value to inform whether set succeeds.
 function setModuleRequest(request: (importUrl: string) => Promise<string>): boolean
 ```
 
-## `addEventListener` 和 `removeEventListener`
+## `addEventListener` / `removeEventListener`
 
 Add or remove event listeners. Two arguments accepted, which are `event` and callback function `listener`, respectively.
 
