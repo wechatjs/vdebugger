@@ -16,7 +16,11 @@ function debug(script: string, debuggerId?: string): (() => void) | false
 
 ## `transform`
 
-转换需要调试的脚本。接受两个参数，分别是脚本字符串 `script` 和调试ID `debuggerId`，其中调试ID通常为脚本的URL。调试ID可选，不传时会当作临时脚本，分配随机的调试ID。该接口会返回转换结果，用于运行时传入 `debug` 接口进行调试。当传入参数不合法或者当前环境不支持断点调试的时候，该接口会返回 `false`。
+转换需要调试的脚本。接受两个参数，分别是脚本字符串 `script` 和调试ID `debuggerId`。
+
+其中，调试ID通常为脚本的URL。调试ID可选，不传时会当作临时脚本，分配随机的调试ID。
+
+该接口会返回转换结果，用于运行时传入 `debug` 接口进行调试。当传入参数不合法的时候，该接口会返回 `false`。
 
 ```ts
 function transform(script: string, debuggerId?: string): string | false
@@ -41,7 +45,9 @@ type ResumeType = 'stepInto' | 'stepOver' | 'stepOut'
 
 ## `evaluate`
 
-在特定作用域环境中执行脚本。接受两个参数，分别是脚本字符串 `script` 和调用栈ID `callFrameId`，其中调用栈ID可选，可通过 `getPausedInfo` 接口或 `paused` 事件的断点相关信息中作用域链 `scopeChain` 获取得到。如果传了调用栈ID，将会在对应调用栈的作用域中执行脚本；如果没传，默认在顶层全局作用域中执行脚本。
+在特定作用域环境中执行表达式。接受两个参数，分别是表达式字符串 `expression` 和调用栈ID `callFrameId`。
+
+其中，调用栈ID可选，可通过 `getPausedInfo` 接口或 `paused` 事件的断点相关信息中作用域链 `scopeChain` 获取得到。如果传了调用栈ID，将会在对应调用栈的作用域中执行表达式；如果没传，默认在顶层全局作用域中执行表达式。
 
 ```ts
 function evaluate<Result = unknown>(expression: string, callFrameId?: number): Result | false
@@ -49,7 +55,11 @@ function evaluate<Result = unknown>(expression: string, callFrameId?: number): R
 
 ## `setBreakpoint`
 
-设置断点。接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` 和可选条件 `condition`。其中可选条件为一段脚本，当该脚本返回为 `true` 时会中断执行，如果没有条件，则默认到该脚本对应行时都中断执行。如果设置成功，该接口会返回断点信息，包括断点ID `id` 和实际行号 `lineNumber`；如果设置不成功，则返回 `false`。
+设置断点。接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` 和可选条件 `condition`。
+
+其中，可选条件为一段脚本，当该脚本返回为 `true` 时会中断执行，如果没有条件，则默认到该脚本对应行时都中断执行。
+
+如果设置成功，该接口会返回断点信息，包括断点ID `id` 和实际行号 `lineNumber`；如果设置不成功，则返回 `false`。
 
 ```ts
 function setBreakpoint(debuggerId: string, lineNumber: number, condition?: string): Breakpoint | false
