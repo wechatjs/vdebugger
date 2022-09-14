@@ -55,9 +55,11 @@ vDebugger.resume(); // output "4"
 
 ## Pre-Transform
 
-`vDebugger` needs code transform for break, while transforming at runtime by default causes performance loss, and therefore, `vDebugger` provide a method called `transform` for code pre-transform at compilation.
+`vDebugger` needs code transform for break, while transforming at runtime by default causes performance loss, and therefore, `vDebugger` provides a method called `transform` for code pre-transform at compilation.
 
 ```js
+/* ----- Compilation ----- */
+
 // pre-transform at compilation, and pass the result to vDebugger.debug at runtime
 import vDebugger from 'vdebugger';
 
@@ -75,6 +77,8 @@ console.log(a); // output "4"
 Pass the transformed `result` to `vDebugger.debug` at runtime.
 
 ```js
+/* ----- Runtime ----- */
+
 // except for passing the transformed result to vDebugger.debug,
 // runtime debugging has no difference from which without pre-transform
 import vDebugger from 'vdebugger';

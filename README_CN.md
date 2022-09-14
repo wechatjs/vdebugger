@@ -6,7 +6,7 @@
 
 ## 安装
 
-`vDebugger` 需要ES2015的支持，因为使用到了[`Generator`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Generator)。
+`vDebugger` 需要ES2015的支持，因为使用到了 [`Generator`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator)。
 
 通过NPM安装:
 
@@ -56,6 +56,8 @@ vDebugger.resume(); // 输出 4
 由于 `vDebugger` 需要对源码进行转换才能进行断点，而默认在运行时转换的话，初始化性能会有一定损失，因此提供了 `transform` 接口进行编译期转换。
 
 ```js
+/* ----- 编译期 ----- */
+
 // 编译期转换，将转换结果result原封不动地交给运行时的vDebugger.debug接口即可
 import vDebugger from 'vdebugger';
 
@@ -72,6 +74,8 @@ console.log(a); // 输出 4
 
 
 ```js
+/* ----- 运行时 ----- */
+
 // 运行时调试，除了将编译结果result传入vDebugger.debug接口，其他用法和没有预编译时保持一致
 import vDebugger from 'vdebugger';
 
