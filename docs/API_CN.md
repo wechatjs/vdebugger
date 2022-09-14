@@ -55,7 +55,7 @@ function evaluate<Result = unknown>(expression: string, callFrameId?: number): R
 
 ## `setBreakpoint`
 
-设置断点。接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` 和可选条件 `condition`。
+根据调试ID设置断点。接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` 和可选条件 `condition`。
 
 其中，可选条件为一段脚本，当该脚本返回为 `true` 时会中断执行，如果没有条件，则默认到该脚本对应行时都中断执行。
 
@@ -69,7 +69,7 @@ interface Breakpoint { id: number, lineNumber: number }
 
 ## `removeBreakpoint`
 
-移除断点。接受一个断点ID的参数，返回的布尔值用于标记是否移除成功。
+根据断点ID移除断点。接受一个断点ID的参数，返回的布尔值用于标记是否移除成功。
 
 ```ts
 function removeBreakpoint(id: number): boolean

@@ -35,7 +35,7 @@ Resume execution when paused by hitting breakpoints. One optional argument accep
 3. step over child process if passing `stepOver`
 4. step out to parent process if passing `stepOut`
 
-This method returns a boolean to inform whether resume succeeds.
+This method returns a boolean value to inform whether resume succeeds.
 
 ```ts
 function resume(type?: ResumeType): boolean
@@ -55,7 +55,7 @@ function evaluate<Result = unknown>(expression: string, callFrameId?: number): R
 
 ## `setBreakpoint`
 
-Set breakpoints. Three arguments accepted, which are script debug id `debuggerId`, line number `lineNumber` and optional break condition `condition`.
+Set breakpoints by script debug id. Three arguments accepted, which are script debug id `debuggerId`, line number `lineNumber` and optional break condition `condition`.
 
 The `condition` is an expression string, and execution will be paused if the evaluation returns `true`. If `condition` missed, execution will be paused when hitting the corresponding line defined by `lineNumber`, by default.
 
@@ -69,7 +69,9 @@ interface Breakpoint { id: number, lineNumber: number }
 
 ## `removeBreakpoint`
 
-移除断点。接受一个断点ID的参数，返回的布尔值用于标记是否移除成功。
+Remove breakpoint by breakpoint id. One breakpoint id argument accepted.
+
+This method returns a boolean value to inform whether remove succeeds.
 
 ```ts
 function removeBreakpoint(id: number): boolean
@@ -77,7 +79,9 @@ function removeBreakpoint(id: number): boolean
 
 ## `setBreakpointsActive`
 
-设置是否启用断点。接受一个布尔值参数，返回的布尔值用于标记设置情况。
+Set whether all breakpoints are active. One boolean argument accepted.
+
+This method returns a boolean value to inform whether breakpoints are active.
 
 ```ts
 function setBreakpointsActive(value: boolean): boolean
@@ -85,7 +89,9 @@ function setBreakpointsActive(value: boolean): boolean
 
 ## `setExecutionPause`
 
-设置是否暂停执行。接受一个布尔值参数，返回的布尔值用于标记设置情况。设置为 `true` 以后，将在接下来要执行的语句前暂停。
+Set whether execution pauses. One boolean argument accepted.
+
+This method returns a boolean value to inform whether execution will pause. If the return is `true`, execution will pause at the next coming step.
 
 ```ts
 function setExecutionPause(value: boolean): boolean
@@ -93,7 +99,9 @@ function setExecutionPause(value: boolean): boolean
 
 ## `setExceptionPause`
 
-设置在遇到异常时是否暂停执行。接受一个布尔值参数，返回的布尔值用于标记设置情况。设置为 `true` 以后，将在遇到异常时暂停。
+Set whether execution pauses when exception. One boolean argument accepted.
+
+This method returns a boolean value to inform whether execution will pause when exception. If the return is `true`, execution will pause right before the exception thro
 
 ```ts
 function setExceptionPause(value: boolean): boolean
@@ -117,7 +125,7 @@ interface CallFrame { debuggerId: string, lineNumber: number, columnNumber: numb
 
 ## `getScopeChain`
 
-获取当前作用域链。
+Get current scope chain.
 
 ```ts
 function getScopeChain(): Scope[]
@@ -128,7 +136,7 @@ interface CallFrame { debuggerId: string, lineNumber: number, columnNumber: numb
 
 ## `getScriptContent`
 
-根据调试ID `debuggerId` 获取调试源码。
+Get script source content by debugger id `debuggerId`.
 
 ```ts
 function getScriptContent(debuggerId: string): string
