@@ -81,6 +81,11 @@ export function wrapProtoMethod(executor) {
   }
 }
 
+const switchGlobalCache = {};
+export function switchGlobalObject() {
+  [Promise, switchGlobalCache.Promise] = [switchGlobalCache.Promise || Promise, Promise];
+}
+
 export function switchObjectMethod(object, methodNameList) {
   oriArrayForEach.call(methodNameList, (methodName) => {
     if (methodName in object) {

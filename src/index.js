@@ -1,6 +1,6 @@
 import { addEventListener, removeEventListener, emitEventListener, getPropertyDescriptor, emptyYield, getAbsURL } from './utils';
 import { EXECUTOR_BREAK_NAME, CLASS_CONSTRUCTOR_NAME, PROXY_MARK } from './consts';
-import { wrapProtoMethod, switchObjectMethod } from './sandbox';
+import { wrapProtoMethod, switchObjectMethod, switchGlobalObject } from './sandbox';
 import { version } from '../package.json';
 import Transformer from './transformer';
 import Scope from './scope';
@@ -8,6 +8,7 @@ import Scope from './scope';
 const TRANSFORMED_MARK = '/** VDEBUGGER_TRANSFORMED */';
 const nativeEval = typeof eval !== 'undefined' ? eval : false;
 const nativeFetch = typeof fetch !== 'undefined' ? fetch : false;
+const nativePromise = Promise;
 
 const transformerMap = new Map();
 const moduleMap = new Map();
@@ -77,6 +78,7 @@ function enableSandbox(enable) {
       'toLocaleUpperCase', 'toLowerCase', 'toString', 'toUpperCase', 'trim', 'trimEnd', 'trimLeft', 'trimRight',
       'trimStart', 'valueOf'
     ]);
+    switchGlobalObject();
     emitEventListener('sandboxchange', { enable: sandbox });
   }
 }
@@ -121,7 +123,7 @@ function executor(generator, result) {
       }
       if (resumeExecutor) {
         // 如果目前命中了断点，暂停执行，并将恢复执行任务放入宏任务队列，等待断点恢复后再执行
-        return breaker(new Promise((resolve) => {
+        return breaker(new nativePromise((resolve) => {
           macroTaskList.push(() => {
             resolve(executor(generator, ret));
           });
@@ -165,7 +167,7 @@ function executor(generator, result) {
             scriptContent: getScriptContent(debuggerId)
           });
           // 记录全局当前断点
-          return currentBreaker = breaker(new Promise((_, reject) => {
+          return currentBreaker = breaker(new nativePromise((_, reject) => {
             resumeExecutor = () => reject(err);
           }), 1);
         }
@@ -232,7 +234,7 @@ function executor(generator, result) {
         scriptContent: getScriptContent(debuggerId)
       });
       // 记录全局当前断点
-      return currentBreaker = breaker(new Promise((resolve, reject) => {
+      return currentBreaker = breaker(new nativePromise((resolve, reject) => {
         resumeExecutor = () => {
           try {
             resolve(executor(generator, ret));
@@ -342,7 +344,7 @@ function requestModules(paths, debuggerId) {
   }
   if (resolveList.length) {
     enableSandbox(false);
-    return breaker(Promise.all(resolveList));
+    return breaker(nativePromise.all(resolveList));
   }
 }
 
@@ -358,14 +360,14 @@ function importModule(path, debuggerId, dynamic) {
   if (typeof cacheModule === 'object') {
     return cacheModule;
   } else if (typeof cacheModule === 'string') {
-    Promise.resolve()
+    nativePromise.resolve()
       .then(() => debug(cacheModule, importUrl)());
   } else {
     requestModules([path], debuggerId)[EXECUTOR_BREAK_NAME][0]
       .then(() => debug(moduleMap.get(importUrl), importUrl)());
   }
   // TODO: 动态import
-  return breaker(new Promise((resolve) => {
+  return breaker(new nativePromise((resolve) => {
     moduleMap.set(importUrl, () => resolve(moduleMap.get(importUrl)));
   }));
 }
