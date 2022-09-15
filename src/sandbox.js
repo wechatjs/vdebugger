@@ -9,7 +9,6 @@ const oriArrayReduce = Array.prototype.reduce;
 const oriCustomElementDefine = typeof CustomElementRegistry === 'function' && CustomElementRegistry.prototype.define;
 
 let hasWrappedProtoMethod = false;
-
 export function wrapProtoMethod(executor) {
   if (hasWrappedProtoMethod) return;
 
@@ -81,9 +80,9 @@ export function wrapProtoMethod(executor) {
   }
 }
 
-const switchGlobalCache = {};
+const globalObjectCache = {};
 export function switchGlobalObject() {
-  [Promise, switchGlobalCache.Promise] = [switchGlobalCache.Promise || Promise, Promise];
+  [Promise, globalObjectCache.Promise] = [globalObjectCache.Promise || Promise, Promise];
 }
 
 export function switchObjectMethod(object, methodNameList) {
