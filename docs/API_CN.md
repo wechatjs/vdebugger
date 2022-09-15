@@ -189,7 +189,7 @@ function runInSkipOver(callback: () => Return): Return | false
 function setModuleRequest(request: (importUrl: string) => Promise<string>): boolean
 ```
 
-## `addEventListener` 和 `removeEventListener`
+## `addEventListener` / `removeEventListener`
 
 添加或移除事件监听器，接受两个参数，分别是事件 `event` 和监听函数 `listener`。
 
