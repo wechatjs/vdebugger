@@ -2,6 +2,23 @@
 
 **[English](./API.md) | 简体中文**
 
+- [`debug`](#debug)
+- [`transform`](#transform)
+- [`resume`](#resume)
+- [`evaluate`](#evaluate)
+- [`setBreakpoint`](#setbreakpoint)
+- [`removeBreakpoint`](#removebreakpoint)
+- [`setBreakpointsActive`](#setbreakpointsactive)
+- [`setExecutionPause`](#setexecutionpause)
+- [`setExceptionPause`](#setexceptionpause)
+- [`getPausedInfo`](#getpausedinfo)
+- [`getScopeChain`](#getscopechain)
+- [`getScriptContent`](#getscriptcontent)
+- [`runInNativeEnv`](#runinnativeenv)
+- [`runInSkipOver`](#runinskipover)
+- [`setModuleRequest`](#setmodulerequest)
+- [`addEventListener` / `removeEventListener`](#addeventlistener--removeeventlistener)
+
 ## `debug`
 
 调试脚本。接受两个参数，分别是脚本字符串 `script` 和调试ID `debuggerId`。

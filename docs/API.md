@@ -2,6 +2,23 @@
 
 **English | [简体中文](./API_CN.md)**
 
+- [`debug`](#debug)
+- [`transform`](#transform)
+- [`resume`](#resume)
+- [`evaluate`](#evaluate)
+- [`setBreakpoint`](#setbreakpoint)
+- [`removeBreakpoint`](#removebreakpoint)
+- [`setBreakpointsActive`](#setbreakpointsactive)
+- [`setExecutionPause`](#setexecutionpause)
+- [`setExceptionPause`](#setexceptionpause)
+- [`getPausedInfo`](#getpausedinfo)
+- [`getScopeChain`](#getscopechain)
+- [`getScriptContent`](#getscriptcontent)
+- [`runInNativeEnv`](#runinnativeenv)
+- [`runInSkipOver`](#runinskipover)
+- [`setModuleRequest`](#setmodulerequest)
+- [`addEventListener` / `removeEventListener`](#addeventlistener--removeeventlistener)
+
 ## `debug`
 
 Debug scripts. Two arguments accepted, which are script code string `script` and script debug id `debuggerId`, respectively.
