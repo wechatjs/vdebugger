@@ -2,9 +2,9 @@
 
 **[English](./README.md) | 简体中文**
 
-浏览器端JavaScript断点调试工具。
+前端JavaScript断点调试工具。
 
-[点击查看Demo。](https://jsbin.com/jibezuvohe/edit?js,console)
+让你在浏览器、Node.js、JavaScriptCore或其他JavaScript运行时中调试JavaScript，而不需要宿主环境提供任何额外的支持。[点击查看Demo。](https://jsbin.com/jibezuvohe/edit?js,console)
 
 ## 安装
 

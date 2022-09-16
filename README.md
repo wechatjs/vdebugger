@@ -4,7 +4,7 @@
 
 A Front-End JavaScript Breakpoint Debugger.
 
-[Try `vDebugger` on playground.](https://jsbin.com/jibezuvohe/edit?js,console)
+Make it possible to debug your JavaScript in browser, Node.js, JavaScriptCore or other JavaScript runtimes without any extra supports from host environments. [Try `vDebugger` on playground.](https://jsbin.com/jibezuvohe/edit?js,console)
 
 ## Installation
 
