@@ -48,6 +48,10 @@ export function getPropertyDescriptor(obj, key) {
 }
 
 export function getAbsURL(url, base) {
-  const absURL = new URL(url, base);
-  return absURL.href;
+  try {
+    const absURL = new URL(url, base);
+    return absURL.href;
+  } catch (err) {
+    return url;
+  }
 }
