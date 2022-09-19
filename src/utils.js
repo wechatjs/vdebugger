@@ -47,11 +47,11 @@ export function getPropertyDescriptor(obj, key) {
   return dptor;
 }
 
-export function getAbsURL(url, base) {
+export function getImportUrl(url, base) {
   try {
     const absURL = new URL(url, base);
     return absURL.href;
   } catch (err) {
-    return url;
+    throw new Error(`Failed to parse import url from '${url}' based on '${base}'`);
   }
 }

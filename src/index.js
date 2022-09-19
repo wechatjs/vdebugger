@@ -1,4 +1,4 @@
-import { addEventListener, removeEventListener, emitEventListener, getPropertyDescriptor, emptyYield, getAbsURL } from './utils';
+import { addEventListener, removeEventListener, emitEventListener, getPropertyDescriptor, emptyYield, getImportUrl } from './utils';
 import { EXECUTOR_BREAK_NAME, CLASS_CONSTRUCTOR_NAME, PROXY_MARK } from './consts';
 import { wrapProtoMethod, switchObjectMethod, switchGlobalObject } from './sandbox';
 import { version } from '../package.json';
@@ -336,7 +336,7 @@ function resolveModuleExports(debuggerId, exports) {
 function requestModules(paths, debuggerId) {
   const resolveList = [];
   for (let i = 0; i < paths.length; i++) {
-    const importUrl = getAbsURL(paths[i], debuggerId);
+    const importUrl = getImportUrl(paths[i], debuggerId);
     const cacheScript = moduleMap.get(importUrl);
     if (!cacheScript) {
       resolveList.push(moduleRequest(importUrl).then((script) => moduleMap.set(importUrl, script)));
@@ -355,7 +355,7 @@ function requestModules(paths, debuggerId) {
  * @param {Boolean} dynamic 是否为动态import
  */
 function importModule(path, debuggerId, dynamic) {
-  const importUrl = getAbsURL(path, debuggerId);
+  const importUrl = getImportUrl(path, debuggerId);
   const cacheModule = moduleMap.get(importUrl);
   if (typeof cacheModule === 'object') {
     return cacheModule;
