@@ -52,6 +52,6 @@ export function getImportUrl(url, base) {
     const absURL = new URL(url, base);
     return absURL.href;
   } catch (err) {
-    throw new Error(`Failed to parse import url from '${url}' based on '${base}'`);
+    throw new Error(`Failed to parse the import url from '${url}' based on '${base}'`);
   }
 }
