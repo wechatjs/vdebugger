@@ -6,6 +6,7 @@ const oriArrayMap = Array.prototype.map;
 const oriArrayForEach = Array.prototype.forEach;
 const oriArrayFilter = Array.prototype.filter;
 const oriArrayReduce = Array.prototype.reduce;
+const oriStringReplace = String.prototype.replace;
 const oriCustomElementDefine = typeof CustomElementRegistry === 'function' && CustomElementRegistry.prototype.define;
 
 let hasWrappedProtoMethod = false;
@@ -16,60 +17,70 @@ export function wrapProtoMethod(executor) {
 
   Array.prototype.forEach = function forEach(iterator, thisArg) {
     if (funcToString.call(iterator).indexOf(FUNC_MARK) !== -1) {
-      const retGenerator = oriArrayReduce.call(this, (prevGenerator, ...iteratorArgs) => {
-        return (function* () {
-          yield* prevGenerator;
-          yield iterator.call(thisArg, ...iteratorArgs);
-        })();
-      }, (function* () {})());
-      return executor(retGenerator);
+      return executor((function* (array) {
+        for (let i = 0; i < array.length; i++) yield iterator.call(thisArg, array[i], i, array);
+      })(this));
     }
     return oriArrayForEach.call(this, iterator, thisArg);
   };
 
   Array.prototype.map = function map(mapper) {
     if (funcToString.call(mapper).indexOf(FUNC_MARK) !== -1) {
-      const retGenerator = oriArrayReduce.call(this, (prevGenerator, ...mapperArgs) => {
-        return (function* () {
-          const prevRes = yield* prevGenerator;
-          const mapperRes = yield mapper(...mapperArgs);
-          prevRes.push(mapperRes);
-          return prevRes;
-        })();
-      }, (function* () { return [] })());
-      return executor(retGenerator);
+      return executor((function* (array) {
+        const result = [];
+        for (let i = 0; i < array.length; i++) result.push(yield mapper(array[i], i, array));
+        return result;
+      })(this));
     }
     return oriArrayMap.call(this, mapper);
   };
 
   Array.prototype.filter = function filter(filter, thisArg) {
     if (funcToString.call(filter).indexOf(FUNC_MARK) !== -1) {
-      const retGenerator = oriArrayReduce.call(this, (prevGenerator, filterItem, ...filterRestArgs) => {
-        return (function* () {
-          const prevRes = yield* prevGenerator;
-          const filterRes = yield filter.call(thisArg, filterItem, ...filterRestArgs);
-          if (filterRes) {
-            prevRes.push(filterItem);
-          }
-          return prevRes;
-        })();
-      }, (function* () { return [] })());
-      return executor(retGenerator);
+      return executor((function* (array) {
+        const result = [];
+        for (let i = 0; i < array.length; i++) (yield filter.call(thisArg, array[i], i, array)) && result.push(array[i]);
+        return result;
+      })(this));
     }
     return oriArrayFilter.call(this, filter, thisArg);
   };
 
   Array.prototype.reduce = function reduce(reducer, init) {
     if (funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
-      const retGenerator = oriArrayReduce.call(this, (accumGenerator, ...reduceArgs) => {
-        return (function* () {
-          const accumRes = yield* accumGenerator;
-          return yield reducer(accumRes, ...reduceArgs);
-        })();
-      }, (function* () { return init })());
-      return executor(retGenerator);
+      return executor((function* (array) {
+        let result = init;
+        for (let i = 0; i < array.length; i++) result = yield reducer(result, array[i], i, array);
+        return result;
+      })(this));
     }
     return oriArrayReduce.call(this, reducer, init);
+  };
+
+  String.prototype.replace = function replace(search, replacer) {
+    if (typeof replacer === 'function' && funcToString.call(replacer).indexOf(FUNC_MARK) !== -1) {
+      if (typeof search === 'string' || search instanceof RegExp) {
+        const reg = typeof search === 'string' ? search : new RegExp(search.source, oriStringReplace.call(search.flags, 'g', ''));
+        return executor((function* (string) {
+          let index = 0;
+          let result = '';
+          do {
+            const rest = string.substring(index);
+            const match = rest.match(reg);
+            if (match) {
+              const restIndex = match.index;
+              match.index += index;
+              match.input = string;
+              result += rest.substring(0, restIndex) + (yield replacer(...match, match.index, string));
+              index = match.index + match[0].length;
+            } else break;
+          } while (search.global)
+          result += string.substring(index);
+          return result;
+        })(this));
+      }
+    }
+    return oriStringReplace.call(this, search, replacer);
   };
 
   if (oriCustomElementDefine) {
