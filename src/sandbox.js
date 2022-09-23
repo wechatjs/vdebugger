@@ -57,6 +57,19 @@ export function wrapProtoMethod(executor) {
     return oriArrayReduce.call(this, reducer, init);
   };
 
+  // Array.prototype.every
+  // Array.prototype.find
+  // Array.prototype.findIndex
+  // Array.prototype.findLast
+  // Array.prototype.findLastIndex
+  // Array.prototype.flatMap
+  // Array.prototype.from
+  // Array.prototype.group
+  // Array.prototype.groupToMap
+  // Array.prototype.reduceRight
+  // Array.prototype.some
+  // Array.prototype.sort
+
   String.prototype.replace = function replace(search, replacer) {
     if (typeof replacer === 'function' && funcToString.call(replacer).indexOf(FUNC_MARK) !== -1) {
       if (typeof search === 'string' || search instanceof RegExp) {
@@ -82,6 +95,10 @@ export function wrapProtoMethod(executor) {
     }
     return oriStringReplace.call(this, search, replacer);
   };
+
+  // String.prototype.replaceAll
+  // Map.prototype.forEach
+  // Set.prototype.forEach
 
   if (oriCustomElementDefine) {
     CustomElementRegistry.prototype.define = function define(tag, ctor) {
