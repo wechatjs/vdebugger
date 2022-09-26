@@ -7,6 +7,7 @@ const oriArrayForEach = Array.prototype.forEach;
 const oriArrayFilter = Array.prototype.filter;
 const oriArrayReduce = Array.prototype.reduce;
 const oriArrayEvery = Array.prototype.every;
+const oriArraySome = Array.prototype.some;
 const oriArrayFind = Array.prototype.find;
 const oriArraySort = Array.prototype.sort;
 const oriArrayFindIndex = Array.prototype.findIndex;
@@ -73,6 +74,18 @@ export function wrapProtoMethod(executor) {
     return oriArrayEvery.call(this, predicate, thisArg);
   };
 
+  Array.prototype.some = function some(predicate, thisArg) {
+    if (funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (array) {
+        for (let i = 0; i < array.length; i++) {
+          if (yield predicate.call(thisArg, array[i], i, array)) return true;
+        }
+        return false;
+      })(this));
+    }
+    return oriArraySome.call(this, predicate, thisArg);
+  };
+
   Array.prototype.find = function find(predicate, thisArg) {
     if (funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
@@ -128,8 +141,6 @@ export function wrapProtoMethod(executor) {
   // Array.prototype.group
   // Array.prototype.groupToMap
   // Array.prototype.reduceRight
-  // Array.prototype.some
-  // Array.prototype.sort
 
   String.prototype.replace = function replace(search, replacer) {
     if (typeof replacer === 'function' && funcToString.call(replacer).indexOf(FUNC_MARK) !== -1) {

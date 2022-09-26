@@ -135,6 +135,32 @@ describe('class tests', () => {
     }
   });
 
+  it('array some normally', async () => {
+    const run = vDebugger.debug(
+      'window.res = [];\n' +
+      'window.arr = [1, 2, 3, 4];\n' +
+      'window.ret = window.arr.some((e, i, a) => {\n' +
+      '  window.res.push([e, i, a]);\n' +
+      '  return e > 2;\n' +
+      '}, 0);'
+    , 'https://sandbox.test/array-some.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/array-some.js', 4);
+    run();
+    for (let i = 0; i < 3; i++) {
+      expect(window.res.length).toBe(i);
+      vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.res.length).toBe(3);
+    expect(window.ret).toEqual(window.arr.some((e) => e > 2));
+    for (let i = 0; i < 3; i++) {
+      expect(window.res[i][0]).toBe(window.arr[i]);
+      expect(window.res[i][1]).toBe(i);
+      expect(window.res[i][2]).toBe(window.arr);
+    }
+  });
+
   it('array find normally', async () => {
     const run = vDebugger.debug(
       'window.res = [];\n' +
