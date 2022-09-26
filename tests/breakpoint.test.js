@@ -334,4 +334,23 @@ describe('breakpoint tests', () => {
     expect(pausedInfo5).toBeFalsy();
     expect(window.__trans_res__).toEqual(25);
   });
+
+  it('pause exception normally', async () => {
+    const run = vDebugger.debug(
+      'window.__trans_res__ = 26;\n' +
+      'window.__trans_res__ = exception;\n' +
+      'window.__trans_res__ = 27;\n'
+    , 'pause.js');
+    expect(run).toBeTruthy();
+
+    vDebugger.setExceptionPause(true);
+
+    run();
+    const pausedInfo = vDebugger.getPausedInfo();
+    expect(pausedInfo).toBeTruthy();
+    expect(pausedInfo.lineNumber).toEqual(2);
+    expect(pausedInfo.reason).toEqual('exception');
+    expect(pausedInfo.data).toBeInstanceOf(ReferenceError);
+    expect(window.__trans_res__).toEqual(26);
+  });
 });
