@@ -39,10 +39,12 @@ describe('api tests', () => {
 
   it('run in native env params check normally', () => {
     expect(vDebugger.runInNativeEnv(1)).toBeFalsy(); // callback非函数
+    expect(vDebugger.runInNativeEnv(() => exception)).toBeFalsy(); // callback异常
   });
 
   it('run in skip over params check normally', () => {
     expect(vDebugger.runInSkipOver(1)).toBeFalsy(); // callback非函数
+    expect(vDebugger.runInSkipOver(() => exception)).toBeFalsy(); // callback异常
   });
 
   it('set module request params check normally', () => {
