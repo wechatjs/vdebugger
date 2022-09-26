@@ -338,7 +338,8 @@ describe('breakpoint tests', () => {
   it('block execution if paused normally', async () => {
     const run = vDebugger.debug(
       'window.__trans_res__ = 26;\n' +
-      'window.__trans_res__ = 27\n'
+      'window.__trans_res__ = 27;\n' +
+      'setTimeout(() => window.__trans_res__ = 29);\n'
     , 'block.js');
     expect(run).toBeTruthy();
 
@@ -362,7 +363,7 @@ describe('breakpoint tests', () => {
     vDebugger.resume();
     await nextTick();
 
-    expect(window.__trans_res__).toEqual(28);
+    expect(window.__trans_res__).toEqual(29); // 会先赋值28，因为是同步的，再回去setTimeout赋值29，因为是异步的
   });
 
   it('pause exception normally', async () => {
