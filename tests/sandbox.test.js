@@ -231,6 +231,32 @@ describe('class tests', () => {
     expect(window.ret).toEqual([1, 2, 3, 4]);
   });
 
+  it('array from normally', async () => {
+    const run = vDebugger.debug(
+      'window.res = [];\n' +
+      'window.arr = [1, 2, 3, 4];\n' +
+      'window.ret = Array.from(window.arr, (e, i, a) => {\n' +
+      '  window.res.push([e, i, a]);\n' +
+      '  return e + 1;\n' +
+      '});'
+    , 'https://sandbox.test/array-from.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/array-from.js', 4);
+    run();
+    for (let i = 0; i < window.arr.length; i++) {
+      expect(window.res.length).toBe(i);
+      vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.res.length).toBe(window.arr.length);
+    expect(window.ret).toEqual(Array.from(window.arr, (e) => e + 1));
+    for (let i = 0; i < window.arr; i++) {
+      expect(window.res[i][0]).toBe(window.arr[i]);
+      expect(window.res[i][1]).toBe(i);
+      expect(window.res[i][2]).toBe(window.arr);
+    }
+  });
+
   it('string replace normally', async () => {
     const run = vDebugger.debug(
       'window.res = [];\n' +

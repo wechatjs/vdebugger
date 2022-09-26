@@ -10,6 +10,7 @@ const oriArrayEvery = Array.prototype.every;
 const oriArraySome = Array.prototype.some;
 const oriArrayFind = Array.prototype.find;
 const oriArraySort = Array.prototype.sort;
+const oriArrayFrom = Array.from;
 const oriArrayFindIndex = Array.prototype.findIndex;
 const oriStringReplace = String.prototype.replace;
 const oriCustomElementDefine = typeof CustomElementRegistry === 'function' && CustomElementRegistry.prototype.define;
@@ -21,7 +22,7 @@ export function wrapProtoMethod(executor) {
   hasWrappedProtoMethod = true;
 
   Array.prototype.forEach = function forEach(iterator, thisArg) {
-    if (funcToString.call(iterator).indexOf(FUNC_MARK) !== -1) {
+    if (typeof iterator === 'function' && funcToString.call(iterator).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         for (let i = 0; i < array.length; i++) yield iterator.call(thisArg, array[i], i, array);
       })(this));
@@ -29,11 +30,11 @@ export function wrapProtoMethod(executor) {
     return oriArrayForEach.call(this, iterator, thisArg);
   };
 
-  Array.prototype.map = function map(mapper) {
-    if (funcToString.call(mapper).indexOf(FUNC_MARK) !== -1) {
+  Array.prototype.map = function map(mapper, thisArg) {
+    if (typeof mapper === 'function' && funcToString.call(mapper).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         const result = [];
-        for (let i = 0; i < array.length; i++) result.push(yield mapper(array[i], i, array));
+        for (let i = 0; i < array.length; i++) result.push(yield mapper.call(thisArg, array[i], i, array));
         return result;
       })(this));
     }
@@ -41,7 +42,7 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.filter = function filter(filter, thisArg) {
-    if (funcToString.call(filter).indexOf(FUNC_MARK) !== -1) {
+    if (typeof filter === 'function' && funcToString.call(filter).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         const result = [];
         for (let i = 0; i < array.length; i++) (yield filter.call(thisArg, array[i], i, array)) && result.push(array[i]);
@@ -52,7 +53,7 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.reduce = function reduce(reducer, init) {
-    if (funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
+    if (typeof reducer === 'function' && funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         let result = init;
         for (let i = 0; i < array.length; i++) result = yield reducer(result, array[i], i, array);
@@ -63,7 +64,7 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.every = function every(predicate, thisArg) {
-    if (funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
+    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         for (let i = 0; i < array.length; i++) {
           if (!(yield predicate.call(thisArg, array[i], i, array))) return false;
@@ -75,7 +76,7 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.some = function some(predicate, thisArg) {
-    if (funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
+    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         for (let i = 0; i < array.length; i++) {
           if (yield predicate.call(thisArg, array[i], i, array)) return true;
@@ -87,7 +88,7 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.find = function find(predicate, thisArg) {
-    if (funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
+    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         for (let i = 0; i < array.length; i++) {
           if (yield predicate.call(thisArg, array[i], i, array)) return array[i];
@@ -98,7 +99,7 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.findIndex = function findIndex(predicate, thisArg) {
-    if (funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
+    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         for (let i = 0; i < array.length; i++) {
           if (yield predicate.call(thisArg, array[i], i, array)) return i;
@@ -109,7 +110,7 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.sort = function sort(compare) {
-    if (funcToString.call(compare).indexOf(FUNC_MARK) !== -1) {
+    if (typeof compare === 'function' && funcToString.call(compare).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         // EMCA规定sort必须稳定，V8使用了timsort，这边简单处理，统一用归并排序
         function* sort(arr, l, r) {
@@ -132,6 +133,17 @@ export function wrapProtoMethod(executor) {
       })(this));
     }
     return oriArraySort.call(this, compare);
+  };
+
+  Array.from = function from(arrayLike, mapper, thisArg) {
+    if (typeof mapper === 'function' && funcToString.call(mapper).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (array) {
+        const result = [];
+        for (let i = 0; i < array.length; i++) result.push(yield mapper.call(thisArg, array[i], i, array));
+        return result;
+      })(oriArrayFrom(arrayLike)));
+    }
+    return oriArrayFrom(arrayLike, mapper, thisArg);
   };
 
   // Array.prototype.findLast
