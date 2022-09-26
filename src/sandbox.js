@@ -6,12 +6,13 @@ const oriArrayMap = Array.prototype.map;
 const oriArrayForEach = Array.prototype.forEach;
 const oriArrayFilter = Array.prototype.filter;
 const oriArrayReduce = Array.prototype.reduce;
+const oriArrayReduceRight = Array.prototype.reduceRight;
 const oriArrayEvery = Array.prototype.every;
 const oriArraySome = Array.prototype.some;
-const oriArrayFind = Array.prototype.find;
 const oriArraySort = Array.prototype.sort;
-const oriArrayFrom = Array.from;
+const oriArrayFind = Array.prototype.find;
 const oriArrayFindIndex = Array.prototype.findIndex;
+const oriArrayFrom = Array.from;
 const oriStringReplace = String.prototype.replace;
 const oriCustomElementDefine = typeof CustomElementRegistry === 'function' && CustomElementRegistry.prototype.define;
 
@@ -63,6 +64,17 @@ export function wrapProtoMethod(executor) {
     return oriArrayReduce.call(this, reducer, init);
   };
 
+  Array.prototype.reduceRight = function reduceRight(reducer, init) {
+    if (typeof reducer === 'function' && funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (array) {
+        let result = init;
+        for (let i = array.length - 1; i > -1; i--) result = yield reducer(result, array[i], i, array);
+        return result;
+      })(this));
+    }
+    return oriArrayReduceRight.call(this, reducer, init);
+  };
+
   Array.prototype.every = function every(predicate, thisArg) {
     if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
@@ -85,28 +97,6 @@ export function wrapProtoMethod(executor) {
       })(this));
     }
     return oriArraySome.call(this, predicate, thisArg);
-  };
-
-  Array.prototype.find = function find(predicate, thisArg) {
-    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
-      return executor((function* (array) {
-        for (let i = 0; i < array.length; i++) {
-          if (yield predicate.call(thisArg, array[i], i, array)) return array[i];
-        }
-      })(this));
-    }
-    return oriArrayFind.call(this, predicate, thisArg);
-  };
-
-  Array.prototype.findIndex = function findIndex(predicate, thisArg) {
-    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
-      return executor((function* (array) {
-        for (let i = 0; i < array.length; i++) {
-          if (yield predicate.call(thisArg, array[i], i, array)) return i;
-        }
-      })(this));
-    }
-    return oriArrayFindIndex.call(this, predicate, thisArg);
   };
 
   Array.prototype.sort = function sort(compare) {
@@ -135,6 +125,28 @@ export function wrapProtoMethod(executor) {
     return oriArraySort.call(this, compare);
   };
 
+  Array.prototype.find = function find(predicate, thisArg) {
+    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (array) {
+        for (let i = 0; i < array.length; i++) {
+          if (yield predicate.call(thisArg, array[i], i, array)) return array[i];
+        }
+      })(this));
+    }
+    return oriArrayFind.call(this, predicate, thisArg);
+  };
+
+  Array.prototype.findIndex = function findIndex(predicate, thisArg) {
+    if (typeof predicate === 'function' && funcToString.call(predicate).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (array) {
+        for (let i = 0; i < array.length; i++) {
+          if (yield predicate.call(thisArg, array[i], i, array)) return i;
+        }
+      })(this));
+    }
+    return oriArrayFindIndex.call(this, predicate, thisArg);
+  };
+
   Array.from = function from(arrayLike, mapper, thisArg) {
     if (typeof mapper === 'function' && funcToString.call(mapper).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
@@ -149,10 +161,8 @@ export function wrapProtoMethod(executor) {
   // Array.prototype.findLast
   // Array.prototype.findLastIndex
   // Array.prototype.flatMap
-  // Array.prototype.from
   // Array.prototype.group
   // Array.prototype.groupToMap
-  // Array.prototype.reduceRight
 
   String.prototype.replace = function replace(search, replacer) {
     if (typeof replacer === 'function' && funcToString.call(replacer).indexOf(FUNC_MARK) !== -1) {

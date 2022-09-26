@@ -24,10 +24,10 @@ describe('class tests', () => {
     }
     expect(window.res.length).toBe(window.arr.length);
     expect(window.ret).toBeUndefined();
-    for (let i = 0; i < window.arr; i++) {
+    for (let i = 0; i < window.arr.length; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
   });
 
@@ -50,10 +50,10 @@ describe('class tests', () => {
     }
     expect(window.res.length).toBe(window.arr.length);
     expect(window.ret).toEqual(window.arr.map((e) => e + 1));
-    for (let i = 0; i < window.arr; i++) {
+    for (let i = 0; i < window.arr.length; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
   });
 
@@ -76,10 +76,10 @@ describe('class tests', () => {
     }
     expect(window.res.length).toBe(window.arr.length);
     expect(window.ret).toEqual(window.arr.filter((e) => e < 3));
-    for (let i = 0; i < window.arr; i++) {
+    for (let i = 0; i < window.arr.length; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
   });
 
@@ -102,10 +102,36 @@ describe('class tests', () => {
     }
     expect(window.res.length).toBe(window.arr.length);
     expect(window.ret).toEqual(window.arr.reduce((p, e) => p + e, 0));
-    for (let i = 0; i < window.arr; i++) {
+    for (let i = 0; i < window.arr.length; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
+    }
+  });
+
+  it('array reduceright normally', async () => {
+    const run = vDebugger.debug(
+      'window.res = [];\n' +
+      'window.arr = [1, 2, 3, 4];\n' +
+      'window.ret = window.arr.reduceRight((p, e, i, a) => {\n' +
+      '  window.res.push([e, i, a]);\n' +
+      '  return p + e;\n' +
+      '}, 0);'
+    , 'https://sandbox.test/array-reduceright.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/array-reduceright.js', 4);
+    run();
+    for (let i = 0; i < window.arr.length; i++) {
+      expect(window.res.length).toBe(i);
+      vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.res.length).toBe(window.arr.length);
+    expect(window.ret).toEqual(window.arr.reduceRight((p, e) => p + e, 0));
+    for (let i = 0; i < window.arr.length; i++) {
+      expect(window.res[i][0]).toBe(window.arr[window.arr.length - i - 1]);
+      expect(window.res[i][1]).toBe(window.arr.length - i - 1);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
   });
 
@@ -131,7 +157,7 @@ describe('class tests', () => {
     for (let i = 0; i < 3; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
   });
 
@@ -157,8 +183,26 @@ describe('class tests', () => {
     for (let i = 0; i < 3; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
+  });
+
+  it('array sort normally', async () => {
+    const run = vDebugger.debug(
+      'window.arr = [2, 1, 4, 3];\n' +
+      'window.ret = window.arr.sort((a, b) => {\n' +
+      '  return a - b;\n' +
+      '});'
+    , 'https://sandbox.test/array-sort.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/array-sort.js', 3);
+    run();
+    let r = true;
+    while (r) {
+      r = vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.ret).toEqual([1, 2, 3, 4]);
   });
 
   it('array find normally', async () => {
@@ -183,7 +227,7 @@ describe('class tests', () => {
     for (let i = 0; i < 3; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
   });
 
@@ -209,26 +253,8 @@ describe('class tests', () => {
     for (let i = 0; i < 3; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
-  });
-
-  it('array sort normally', async () => {
-    const run = vDebugger.debug(
-      'window.arr = [2, 1, 4, 3];\n' +
-      'window.ret = window.arr.sort((a, b) => {\n' +
-      '  return a - b;\n' +
-      '});'
-    , 'https://sandbox.test/array-sort.js');
-    expect(run).toBeTruthy();
-    vDebugger.setBreakpoint('https://sandbox.test/array-sort.js', 3);
-    run();
-    let r = true;
-    while (r) {
-      r = vDebugger.resume();
-      await nextTick();
-    }
-    expect(window.ret).toEqual([1, 2, 3, 4]);
   });
 
   it('array from normally', async () => {
@@ -250,10 +276,10 @@ describe('class tests', () => {
     }
     expect(window.res.length).toBe(window.arr.length);
     expect(window.ret).toEqual(Array.from(window.arr, (e) => e + 1));
-    for (let i = 0; i < window.arr; i++) {
+    for (let i = 0; i < window.arr.length; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
-      expect(window.res[i][2]).toBe(window.arr);
+      expect(window.res[i][2]).toEqual(window.arr);
     }
   });
 
