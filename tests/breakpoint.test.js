@@ -101,7 +101,7 @@ describe('breakpoint tests', () => {
     expect(window.__trans_res__).toEqual(8);
   });
 
-  it('remove breakpoint normally', async () => {
+  it('remove breakpoint normally', () => {
     const run = vDebugger.debug(
       'window.__trans_res__ = 9;\n' +
       'window.__trans_res__ = 10;\n' +
@@ -126,7 +126,7 @@ describe('breakpoint tests', () => {
     expect(window.__trans_res__).toEqual(11);
   });
 
-  it('evaluate normally', async () => {
+  it('evaluate normally', () => {
     const run = vDebugger.debug(
       'const a = 999;\n' +
       'window.__trans_res__ = 12;'
@@ -151,7 +151,7 @@ describe('breakpoint tests', () => {
     expect(window.__trans_res__).toEqual(12);
   });
 
-  it('pause execution normally', async () => {
+  it('pause execution normally', () => {
     const run = vDebugger.debug('window.__trans_res__ = 13;', 'pause.js');
     expect(run).toBeTruthy();
 
@@ -168,7 +168,7 @@ describe('breakpoint tests', () => {
     expect(window.__trans_res__).toEqual(13);
   });
 
-  it('inactive breakpoint normally', async () => {
+  it('inactive breakpoint normally', () => {
     const run = vDebugger.debug('window.__trans_res__ = 14;', 'inactive.js');
     expect(run).toBeTruthy();
 
@@ -183,7 +183,7 @@ describe('breakpoint tests', () => {
     vDebugger.setBreakpointsActive(true);
   });
 
-  it('run in native env normally', async () => {
+  it('run in native env normally', () => {
     window.native = () => {
       vDebugger.runInNativeEnv(() => {
         window.__trans_res__ = Array.from([15])[0];
@@ -238,7 +238,7 @@ describe('breakpoint tests', () => {
     expect(window.__trans_res__).toEqual(16);
   });
 
-  it('emit error normally', async () => {
+  it('emit error normally', () => {
     const run = vDebugger.debug(
       'window.__trans_res__ = 17;\n' +
       '  windows.__trans_res__ = -1;\n' + // 前面故意空两格，看能不能正确定位到列
@@ -259,7 +259,7 @@ describe('breakpoint tests', () => {
     expect(tryCatchErr.stack.indexOf('error.js:2:2')).not.toEqual(-1); // 看看定位到的位置对不对
   });
 
-  it('condition break normally', async () => {
+  it('condition break normally', () => {
     const run = vDebugger.debug(
       'window.__trans_res__ = 19;\n' +
       'window.__trans_res__ = 20;\n' +
@@ -335,12 +335,42 @@ describe('breakpoint tests', () => {
     expect(window.__trans_res__).toEqual(25);
   });
 
-  it('pause exception normally', async () => {
+  it('block execution if paused normally', async () => {
     const run = vDebugger.debug(
       'window.__trans_res__ = 26;\n' +
+      'window.__trans_res__ = 27\n'
+    , 'block.js');
+    expect(run).toBeTruthy();
+
+    vDebugger.setBreakpoint('block.js', 2);
+
+    run();
+    const pausedInfo = vDebugger.getPausedInfo();
+    expect(pausedInfo).toBeTruthy();
+    expect(pausedInfo.lineNumber).toEqual(2);
+    expect(window.__trans_res__).toEqual(26);
+
+    const run2 = vDebugger.debug('window.__trans_res__ = 28;', 'other.js');
+    expect(run2).toBeTruthy();
+
+    run2();
+    const pausedInfo2 = vDebugger.getPausedInfo();
+    expect(pausedInfo2).toBeTruthy();
+    expect(pausedInfo2.lineNumber).toEqual(2);
+    expect(window.__trans_res__).toEqual(26);
+
+    vDebugger.resume();
+    await nextTick();
+
+    expect(window.__trans_res__).toEqual(28);
+  });
+
+  it('pause exception normally', async () => {
+    const run = vDebugger.debug(
+      'window.__trans_res__ = 99999;\n' +
       'window.__trans_res__ = exception;\n' +
-      'window.__trans_res__ = 27;\n'
-    , 'pause.js');
+      'window.__trans_res__ = 100000;\n'
+    , 'exception.js');
     expect(run).toBeTruthy();
 
     vDebugger.setExceptionPause(true);
@@ -351,6 +381,6 @@ describe('breakpoint tests', () => {
     expect(pausedInfo.lineNumber).toEqual(2);
     expect(pausedInfo.reason).toEqual('exception');
     expect(pausedInfo.data).toBeInstanceOf(ReferenceError);
-    expect(window.__trans_res__).toEqual(26);
+    expect(window.__trans_res__).toEqual(99999);
   });
 });
