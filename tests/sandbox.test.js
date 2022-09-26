@@ -6,6 +6,32 @@ import vDebugger from '../src';
 import { nextTick } from './utils';
 
 describe('class tests', () => {
+  it('array from normally', async () => {
+    const run = vDebugger.debug(
+      'window.res = [];\n' +
+      'window.arr = [1, 2, 3, 4];\n' +
+      'window.ret = Array.from(window.arr, (e, i, a) => {\n' +
+      '  window.res.push([e, i, a]);\n' +
+      '  return e + 1;\n' +
+      '});'
+    , 'https://sandbox.test/array-from.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/array-from.js', 4);
+    run();
+    for (let i = 0; i < window.arr.length; i++) {
+      expect(window.res.length).toBe(i);
+      vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.res.length).toBe(window.arr.length);
+    expect(window.ret).toEqual(Array.from(window.arr, (e) => e + 1));
+    for (let i = 0; i < window.arr.length; i++) {
+      expect(window.res[i][0]).toBe(window.arr[i]);
+      expect(window.res[i][1]).toBe(i);
+      expect(window.res[i][2]).toEqual(window.arr);
+    }
+  });
+
   it('array foreach normally', async () => {
     const run = vDebugger.debug(
       'window.res = [];\n' +
@@ -258,17 +284,17 @@ describe('class tests', () => {
     }
   });
 
-  it('array from normally', async () => {
+  it('array flatmap normally', async () => {
     const run = vDebugger.debug(
       'window.res = [];\n' +
       'window.arr = [1, 2, 3, 4];\n' +
-      'window.ret = Array.from(window.arr, (e, i, a) => {\n' +
+      'window.ret = window.arr.flatMap((e, i, a) => {\n' +
       '  window.res.push([e, i, a]);\n' +
-      '  return e + 1;\n' +
+      '  return [e + 1];\n' +
       '});'
-    , 'https://sandbox.test/array-from.js');
+    , 'https://sandbox.test/array-flatmap.js');
     expect(run).toBeTruthy();
-    vDebugger.setBreakpoint('https://sandbox.test/array-from.js', 4);
+    vDebugger.setBreakpoint('https://sandbox.test/array-flatmap.js', 4);
     run();
     for (let i = 0; i < window.arr.length; i++) {
       expect(window.res.length).toBe(i);
@@ -276,7 +302,7 @@ describe('class tests', () => {
       await nextTick();
     }
     expect(window.res.length).toBe(window.arr.length);
-    expect(window.ret).toEqual(Array.from(window.arr, (e) => e + 1));
+    expect(window.ret).toEqual(window.arr.flatMap((e) => [e + 1]));
     for (let i = 0; i < window.arr.length; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);

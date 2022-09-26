@@ -2,6 +2,7 @@ import { CLASS_CONSTRUCTOR_NAME, SANDBOX_PREFIX } from './consts';
 
 const FUNC_MARK = `const ${CLASS_CONSTRUCTOR_NAME}`;
 const funcToString = Function.prototype.toString;
+const oriArrayFrom = Array.from;
 const oriArrayMap = Array.prototype.map;
 const oriArrayForEach = Array.prototype.forEach;
 const oriArrayFilter = Array.prototype.filter;
@@ -12,7 +13,8 @@ const oriArraySome = Array.prototype.some;
 const oriArraySort = Array.prototype.sort;
 const oriArrayFind = Array.prototype.find;
 const oriArrayFindIndex = Array.prototype.findIndex;
-const oriArrayFrom = Array.from;
+const oriArrayConcat = Array.prototype.concat;
+const oriArrayFlatMap = Array.prototype.flatMap;
 const oriStringReplace = String.prototype.replace;
 const oriMapForEach = Map.prototype.forEach;
 const oriSetForEach = Set.prototype.forEach;
@@ -23,6 +25,17 @@ export function wrapProtoMethod(executor) {
   if (hasWrappedProtoMethod) return;
 
   hasWrappedProtoMethod = true;
+
+  Array.from = function from(arrayLike, mapper, thisArg) {
+    if (typeof mapper === 'function' && funcToString.call(mapper).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (array) {
+        const result = [];
+        for (let i = 0; i < array.length; i++) result.push(yield mapper.call(thisArg, array[i], i, array));
+        return result;
+      })(oriArrayFrom(arrayLike)));
+    }
+    return oriArrayFrom(arrayLike, mapper, thisArg);
+  };
 
   Array.prototype.forEach = function forEach(iterator, thisArg) {
     if (typeof iterator === 'function' && funcToString.call(iterator).indexOf(FUNC_MARK) !== -1) {
@@ -41,7 +54,7 @@ export function wrapProtoMethod(executor) {
         return result;
       })(this));
     }
-    return oriArrayMap.call(this, mapper);
+    return oriArrayMap.call(this, mapper, thisArg);
   };
 
   Array.prototype.filter = function filter(filter, thisArg) {
@@ -152,20 +165,19 @@ export function wrapProtoMethod(executor) {
     return oriArrayFindIndex.call(this, predicate, thisArg);
   };
 
-  Array.from = function from(arrayLike, mapper, thisArg) {
+  oriArrayFlatMap && (Array.prototype.flatMap = function map(mapper, thisArg) {
     if (typeof mapper === 'function' && funcToString.call(mapper).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         const result = [];
         for (let i = 0; i < array.length; i++) result.push(yield mapper.call(thisArg, array[i], i, array));
-        return result;
-      })(oriArrayFrom(arrayLike)));
+        return oriArrayConcat.apply([], result);
+      })(this));
     }
-    return oriArrayFrom(arrayLike, mapper, thisArg);
-  };
+    return oriArrayFlatMap.call(this, mapper, thisArg);
+  });
 
   // Array.prototype.findLast
   // Array.prototype.findLastIndex
-  // Array.prototype.flatMap
   // Array.prototype.group
   // Array.prototype.groupToMap
 
@@ -217,12 +229,10 @@ export function wrapProtoMethod(executor) {
     return oriSetForEach.call(this, iterator, thisArg);
   };
 
-  if (oriCustomElementDefine) {
-    CustomElementRegistry.prototype.define = function define(tag, ctor) {
-      ctor[CLASS_CONSTRUCTOR_NAME] = 1;
-      return oriCustomElementDefine.call(this, tag, ctor);
-    };
-  }
+  oriCustomElementDefine && (CustomElementRegistry.prototype.define = function define(tag, ctor) {
+    ctor[CLASS_CONSTRUCTOR_NAME] = 1;
+    return oriCustomElementDefine.call(this, tag, ctor);
+  });
 }
 
 const globalObjectCache = {};
