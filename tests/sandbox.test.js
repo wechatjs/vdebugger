@@ -202,7 +202,8 @@ describe('class tests', () => {
       r = vDebugger.resume();
       await nextTick();
     }
-    expect(window.ret).toEqual([1, 2, 3, 4]);
+    expect(window.ret).toEqual(window.arr);
+    expect(window.ret).toEqual([2, 1, 4, 3].sort((a, b) => a - b));
   });
 
   it('array find normally', async () => {
@@ -331,6 +332,9 @@ describe('class tests', () => {
       expect(window.map.get(window.res[i][1])).toBe(window.res[i][0]);
       expect(window.res[i][2]).toBe(window.map);
     }
+    const res = [];
+    window.map.forEach((v, i, m) => res.push([v, i, m]));
+    expect(window.res).toEqual(res);
   });
 
   it('set foreach normally', async () => {
@@ -356,6 +360,9 @@ describe('class tests', () => {
       expect(window.set.has(window.res[i][1])).toBeTruthy();
       expect(window.res[i][2]).toBe(window.set);
     }
+    const res = [];
+    window.set.forEach((v, i, s) => res.push([v, i, s]));
+    expect(window.res).toEqual(res);
   });
 });
  
