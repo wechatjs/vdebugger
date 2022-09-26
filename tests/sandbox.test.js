@@ -308,5 +308,54 @@ describe('class tests', () => {
       expect(window.res[i][3]).toBe('abcbd');
     }
   });
+
+  it('map foreach normally', async () => {
+    const run = vDebugger.debug(
+      'window.res = [];\n' +
+      'window.map = new Map([[1, 2], [3, 4]]);\n' +
+      'window.ret = window.map.forEach((v, i, m) => {\n' +
+      '  window.res.push([v, i, m]);\n' +
+      '});'
+    , 'https://sandbox.test/map-foreach.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/map-foreach.js', 4);
+    run();
+    for (let i = 0; i < window.map.size; i++) {
+      expect(window.res.length).toBe(i);
+      vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.res.length).toBe(window.map.size);
+    expect(window.ret).toBeUndefined();
+    for (let i = 0; i < window.map.size; i++) {
+      expect(window.map.get(window.res[i][1])).toBe(window.res[i][0]);
+      expect(window.res[i][2]).toBe(window.map);
+    }
+  });
+
+  it('set foreach normally', async () => {
+    const run = vDebugger.debug(
+      'window.res = [];\n' +
+      'window.set = new Set([1, 2, 3, 4]);\n' +
+      'window.ret = window.set.forEach((v, i, s) => {\n' +
+      '  window.res.push([v, i, s]);\n' +
+      '});'
+    , 'https://sandbox.test/set-foreach.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/set-foreach.js', 4);
+    run();
+    for (let i = 0; i < window.set.size; i++) {
+      expect(window.res.length).toBe(i);
+      vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.res.length).toBe(window.set.size);
+    expect(window.ret).toBeUndefined();
+    for (let i = 0; i < window.set.size; i++) {
+      expect(window.set.has(window.res[i][0])).toBeTruthy();
+      expect(window.set.has(window.res[i][1])).toBeTruthy();
+      expect(window.res[i][2]).toBe(window.set);
+    }
+  });
 });
  

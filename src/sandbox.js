@@ -14,6 +14,8 @@ const oriArrayFind = Array.prototype.find;
 const oriArrayFindIndex = Array.prototype.findIndex;
 const oriArrayFrom = Array.from;
 const oriStringReplace = String.prototype.replace;
+const oriMapForEach = Map.prototype.forEach;
+const oriSetForEach = Set.prototype.forEach;
 const oriCustomElementDefine = typeof CustomElementRegistry === 'function' && CustomElementRegistry.prototype.define;
 
 let hasWrappedProtoMethod = false;
@@ -108,13 +110,16 @@ export function wrapProtoMethod(executor) {
           const mid = l + Math.floor((r - l) / 2);
           yield* sort(arr, l, mid);
           yield* sort(arr, mid + 1, r);
-          if ((yield compare(arr[mid], arr[mid + 1])) > 0) {
-            let aux = arr.slice(l, r + 1), i = l, j = mid + 1;
-            for (let k = l; k <= r; k++) {
+          const res = yield compare(arr[mid], arr[mid + 1]);
+          if (typeof res === 'number' && res > 0) {
+            for (let k = l, i = l, j = mid + 1, aux = arr.slice(l, r + 1); k <= r; k++) {
               if (i > mid) arr[k] = aux[j++ - l];
               else if (j > r) arr[k] = aux[i++ - l];
-              else if ((yield compare(aux[i - l], aux[j - l])) > 0) arr[k] = aux[j++ - l];
-              else arr[k] = aux[i++ - l];
+              else {
+                const res = yield compare(aux[i - l], aux[j - l]);
+                if (typeof res === 'number' && res > 0) arr[k] = aux[j++ - l];
+                else arr[k] = aux[i++ - l];
+              }
             }
           }
         }
@@ -191,8 +196,26 @@ export function wrapProtoMethod(executor) {
   };
 
   // String.prototype.replaceAll
-  // Map.prototype.forEach
-  // Set.prototype.forEach
+
+  Map.prototype.forEach = function forEach(iterator, thisArg) {
+    if (typeof iterator === 'function' && funcToString.call(iterator).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (map) {
+        const entries = oriArrayFrom(map);
+        for (let i = 0; i < entries.length; i++) yield iterator.call(thisArg, entries[i][1], entries[i][0], map);
+      })(this));
+    }
+    return oriMapForEach.call(this, iterator, thisArg);
+  };
+
+  Set.prototype.forEach = function forEach(iterator, thisArg) {
+    if (typeof iterator === 'function' && funcToString.call(iterator).indexOf(FUNC_MARK) !== -1) {
+      return executor((function* (set) {
+        const values = oriArrayFrom(set);
+        for (let i = 0; i < values.length; i++) yield iterator.call(thisArg, values[i], values[i], set);
+      })(this));
+    }
+    return oriSetForEach.call(this, iterator, thisArg);
+  };
 
   if (oriCustomElementDefine) {
     CustomElementRegistry.prototype.define = function define(tag, ctor) {
