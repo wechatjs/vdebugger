@@ -16,6 +16,7 @@ const oriArrayFindIndex = Array.prototype.findIndex;
 const oriArrayConcat = Array.prototype.concat;
 const oriArrayFlatMap = Array.prototype.flatMap;
 const oriStringReplace = String.prototype.replace;
+const oriStringReplaceAll = String.prototype.replaceAll;
 const oriMapForEach = Map.prototype.forEach;
 const oriSetForEach = Set.prototype.forEach;
 const oriCustomElementDefine = typeof CustomElementRegistry === 'function' && CustomElementRegistry.prototype.define;
@@ -181,33 +182,47 @@ export function wrapProtoMethod(executor) {
   // Array.prototype.group
   // Array.prototype.groupToMap
 
+  const replaceString = (string, search, replacer, global) => {
+    const reg = typeof search === 'string' ? search : new RegExp(search.source, oriStringReplace.call(search.flags, 'g', ''));
+    return executor((function* () {
+      let index = 0;
+      let result = '';
+      do {
+        const rest = string.substring(index);
+        const match = rest.match(reg);
+        if (match) {
+          const restIndex = match.index;
+          match.index += index;
+          match.input = string;
+          result += rest.substring(0, restIndex) + (yield replacer(...match, match.index, string));
+          index = match.index + match[0].length;
+        } else break;
+      } while (search.global || global)
+      result += string.substring(index);
+      return result;
+    })());
+  };
+
   String.prototype.replace = function replace(search, replacer) {
     if (typeof replacer === 'function' && funcToString.call(replacer).indexOf(FUNC_MARK) !== -1) {
       if (typeof search === 'string' || search instanceof RegExp) {
-        const reg = typeof search === 'string' ? search : new RegExp(search.source, oriStringReplace.call(search.flags, 'g', ''));
-        return executor((function* (string) {
-          let index = 0;
-          let result = '';
-          do {
-            const rest = string.substring(index);
-            const match = rest.match(reg);
-            if (match) {
-              const restIndex = match.index;
-              match.index += index;
-              match.input = string;
-              result += rest.substring(0, restIndex) + (yield replacer(...match, match.index, string));
-              index = match.index + match[0].length;
-            } else break;
-          } while (search.global)
-          result += string.substring(index);
-          return result;
-        })(this));
+        return replaceString(this, search, replacer);
       }
     }
     return oriStringReplace.call(this, search, replacer);
   };
 
-  // String.prototype.replaceAll
+  String.prototype.replaceAll && (String.prototype.replaceAll = function replaceAll(search, replacer) {
+    if (typeof replacer === 'function' && funcToString.call(replacer).indexOf(FUNC_MARK) !== -1) {
+      if (typeof search === 'string' || search instanceof RegExp) {
+        if (search instanceof RegExp && search.flags.indexOf('g') === -1) {
+          throw new TypeError('String.prototype.replaceAll called with a non-global RegExp argument');
+        }
+        return replaceString(this, search, replacer, true);
+      }
+    }
+    return oriStringReplaceAll.call(this, search, replacer);
+  });
 
   Map.prototype.forEach = function forEach(iterator, thisArg) {
     if (typeof iterator === 'function' && funcToString.call(iterator).indexOf(FUNC_MARK) !== -1) {
