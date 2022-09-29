@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 
-import axios from 'axios';
-import vDebugger from '../src';
 import { nextTick } from './utils';
+import vDebugger from '../src';
+import axios from 'axios';
 
 describe('react tests', () => {
   let reactScript = '';

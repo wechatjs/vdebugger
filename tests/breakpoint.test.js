@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import vDebugger from '../src';
 import { nextTick } from './utils';
+import vDebugger from '../src';
 
 describe('breakpoint tests', () => {
   let errorEventRes = null;

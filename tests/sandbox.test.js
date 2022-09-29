@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import vDebugger from '../src';
 import { nextTick } from './utils';
+import vDebugger from '../src';
 
 describe('class tests', () => {
   it('array from normally', async () => {
@@ -327,12 +327,37 @@ describe('class tests', () => {
       await nextTick();
     }
     expect(window.res.length).toBe(2);
-    expect(window.ret).toBe('aocod');
+    expect(window.ret).toBe('abcbd'.replace(/(b)/g, 'o'));
     for (let i = 0; i < 2; i++) {
       expect(window.res[i][0]).toBe('b');
       expect(window.res[i][1]).toBe('b');
       expect(window.res[i][2]).toBe(i * 2 + 1);
       expect(window.res[i][3]).toBe('abcbd');
+    }
+  });
+
+  it('string replace all normally', async () => {
+    const run = vDebugger.debug(
+      'window.res = [];\n' +
+      'window.ret = "abcbd".replaceAll("b", (m0, i, s) => {\n' +
+      '  window.res.push([m0, i, s]);\n' +
+      '  return "o";\n' +
+      '});'
+    , 'https://sandbox.test/string-replaceall.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/string-replaceall.js', 3);
+    run();
+    for (let i = 0; i < 2; i++) {
+      expect(window.res.length).toBe(i);
+      vDebugger.resume();
+      await nextTick();
+    }
+    expect(window.res.length).toBe(2);
+    expect(window.ret).toBe('abcbd'.replaceAll('b', 'o'));
+    for (let i = 0; i < 2; i++) {
+      expect(window.res[i][0]).toBe('b');
+      expect(window.res[i][1]).toBe(i * 2 + 1);
+      expect(window.res[i][2]).toBe('abcbd');
     }
   });
 
