@@ -230,6 +230,16 @@ describe('class tests', () => {
     }
     expect(window.ret).toEqual(window.arr);
     expect(window.ret).toEqual([2, 1, 4, 3].sort((a, b) => a - b));
+
+    const run2 = vDebugger.debug(
+      'window.arr = [3, 1, 4, 2];\n' +
+      'window.ret = window.arr.sort((a, b) => {\n' +
+      '  return b - a;\n' +
+      '});'
+    , 'https://sandbox.test/array-sortrev.js');
+    run2();
+    expect(window.ret).toEqual(window.arr);
+    expect(window.ret).toEqual([3, 1, 4, 2].sort((a, b) => b - a));
   });
 
   it('array find normally', async () => {
@@ -276,7 +286,7 @@ describe('class tests', () => {
       await nextTick();
     }
     expect(window.res.length).toBe(3);
-    expect(window.ret).toBe(2);
+    expect(window.ret).toBe(window.arr.findIndex((e) => e === 3));
     for (let i = 0; i < 3; i++) {
       expect(window.res[i][0]).toBe(window.arr[i]);
       expect(window.res[i][1]).toBe(i);
@@ -359,6 +369,16 @@ describe('class tests', () => {
       expect(window.res[i][1]).toBe(i * 2 + 1);
       expect(window.res[i][2]).toBe('abcbd');
     }
+
+    const run2 = vDebugger.debug(
+      'try {\n' +
+      '  "abcbd".replaceAll(/b/, () => "o");\n' +
+      '} catch (err) {\n' +
+      '  window.ret = err;\n' +
+      '}'
+    , 'https://sandbox.test/string-replaceallerr.js');
+    run2();
+    expect(window.ret).toBeInstanceOf(TypeError);
   });
 
   it('map foreach normally', async () => {
@@ -414,6 +434,15 @@ describe('class tests', () => {
     const res = [];
     window.set.forEach((v, i, s) => res.push([v, i, s]));
     expect(window.res).toEqual(res);
+  });
+
+  it('define custom element', () => {
+    const run = vDebugger.debug(
+      'customElements.define("sb-test", class a {})'
+    , 'https://sandbox.test/define-custom-element.js');
+    expect(run).toBeTruthy();
+    vDebugger.setBreakpoint('https://sandbox.test/define-custom-element.js', 4);
+    run();
   });
 });
  
