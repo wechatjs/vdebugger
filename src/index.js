@@ -275,9 +275,8 @@ function scope(push, scopeEval, scopeName) {
  */
 function* newObject(constructor, args, target) {
   if (constructor === Proxy) {
-    // TODO: 先简单粗暴覆盖掉get，避免Vue报错，后续补完get
     const [ctx, handlers] = args;
-    return new Proxy(ctx, Object.assign({}, handlers, {
+    return new Proxy(ctx, Object.assign(Object.create(handlers.__proto__), handlers, {
       get(...getArgs) {
         if (PROXY_MARK === getArgs[1]) {
           return true;
