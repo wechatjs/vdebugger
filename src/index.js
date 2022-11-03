@@ -308,8 +308,10 @@ function* newObject(constructor, args, target) {
 function setter(obj, key, value) {
   const dptor = getPropertyDescriptor(obj, key);
   if (!obj[PROXY_MARK] && dptor?.set) {
-    dptor.set.call(obj, value);
-    return value;
+    try {
+      dptor.set.call(obj, value);
+      return value;
+    } catch (err) { /* empty */ }
   }
   return obj[key] = value;
 }
