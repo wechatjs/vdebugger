@@ -244,9 +244,9 @@ export function wrapProtoMethod(executor) {
     return oriSetForEach.call(this, iterator, thisArg);
   };
 
-  oriCustomElementDefine && (CustomElementRegistry.prototype.define = function define(tag, ctor) {
+  oriCustomElementDefine && (CustomElementRegistry.prototype.define = function define(_, ctor) {
     ctor[CLASS_CONSTRUCTOR_NAME] = 1;
-    return oriCustomElementDefine.call(this, tag, ctor);
+    return oriCustomElementDefine.apply(this, arguments);
   });
 }
 
