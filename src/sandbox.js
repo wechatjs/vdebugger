@@ -245,7 +245,7 @@ export function wrapProtoMethod(executor) {
   };
 
   oriCustomElementDefine && (CustomElementRegistry.prototype.define = function define(_, ctor) {
-    ctor[CLASS_CONSTRUCTOR_NAME] = 1;
+    typeof ctor === 'function' && (ctor[CLASS_CONSTRUCTOR_NAME] = 1);
     return oriCustomElementDefine.apply(this, arguments);
   });
 }

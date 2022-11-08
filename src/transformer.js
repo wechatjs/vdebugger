@@ -91,9 +91,9 @@ export default class Transformer {
         // 对于被debugger转换成generator函数的调用，套一层yield语句
         this.transformMemberExpression(node, ancestors);
       },
-      ClassBody: (node) => {
+      ClassBody: (node, ancestors) => {
         // 因为class constructor要求同步执行，这里对constructor进行转换一下，变成generator，搭配NewExpression转换使用
-        this.transformClass(node);
+        this.transformClass(node, ancestors);
       },
       ThisExpression: (node) => {
         Object.assign(node, this.createIdentifier(TMP_VARIABLE_NAME + 't'));
@@ -488,7 +488,7 @@ export default class Transformer {
   }
 
   // 转换class
-  transformClass(node) {
+  transformClass(node, ancestors) {
     const ctorNode = node.body.find((m) => m.kind === 'constructor');
     if (ctorNode) {
       const ctorFuncExpr = ctorNode.value;
@@ -499,6 +499,48 @@ export default class Transformer {
       ctorNode.value = innerFuncExpr;
       ctorNode.kind = 'method';
     }
+    const parentNode = ancestors[ancestors.length - 2];
+    const ctorIdentifier = this.createIdentifier(CLASS_CONSTRUCTOR_NAME);
+    const ctorArgs = [];
+    const ctorBody = [];
+    if (parentNode.superClass) {
+      ctorArgs.push(this.createRestElement(this.createIdentifier('args')));
+      ctorBody.push(this.createExpressionStatement(
+        this.createCallExpression(
+          this.createSuper(),
+          [this.createSpreadElement(this.createIdentifier('args'))]
+        )
+      ));
+    }
+    ctorBody.push(this.createReturnStatement(
+      this.createConditionalExpression(
+        this.createUnaryExpression(
+          this.createMemberExpression(
+            this.createMetaProperty(this.createIdentifier('new'), this.createIdentifier('target')),
+            ctorIdentifier
+          ), '!'
+        ),
+        this.createThisExpression(),
+        this.createCallExpression(
+          this.createIdentifier(EXECUTOR_FUNC_NAME),
+          [this.createCallExpression(
+            this.createMemberExpression(
+              this.createMemberExpression(this.createThisExpression(), ctorIdentifier),
+              this.createIdentifier('call')
+            ), [this.createThisExpression()]
+          )]
+        )
+      )
+    ));
+    const ctorDefinition = this.createMethodDefinition(
+      'constructor',
+      this.createIdentifier('constructor'),
+      this.createFunctionExpression(
+        this.createBlockStatement(ctorBody),
+        ctorArgs, 'FunctionExpression', false
+      )
+    );
+    node.body.push(ctorDefinition);
   }
 
   // 转换new表达式
@@ -794,5 +836,25 @@ export default class Transformer {
   // 创建try catch语句AST节点
   createTryStatement(block, handler, finalizer) {
     return { type: 'TryStatement', block, handler, finalizer };
+  }
+
+  // 创建类方法定义AST节点
+  createMethodDefinition(kind, key, value) {
+    return { type: 'MethodDefinition', kind, key, value, static: false, computed: false };
+  }
+
+  // 创建super节点
+  createSuper() {
+    return { type: 'Super' };
+  }
+
+  // 创建剩余参数AST节点
+  createRestElement(argument) {
+    return { type: 'RestElement', argument };
+  }
+
+  // 创建展开参数AST节点
+  createSpreadElement(argument) {
+    return { type: 'SpreadElement', argument };
   }
 }
