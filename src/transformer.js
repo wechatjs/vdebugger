@@ -344,7 +344,11 @@ export default class Transformer {
   transformMemberExpression(node, ancestors) {
     const parentNode = ancestors[ancestors.length - 2];
     if (parentNode.type === 'AssignmentExpression' && parentNode.left === node) {
-      // 左值，不用继续探寻
+      // 左值，不处理
+      return;
+    }
+    if (parentNode.type === 'UnaryExpression' && parentNode.operator === 'delete') {
+      // delete操作，不处理
       return;
     }
     if (ancestors.find((a) => a.type === 'AssignmentPattern' || a.type === 'ArrayPattern')) {
