@@ -1,6 +1,6 @@
 {
   "name": "vdebugger",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Front-End JavaScript Debugger",
   "main": "dist/vdebugger.js",
   "types": "dist/vdebugger.d.ts",
