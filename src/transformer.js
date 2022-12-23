@@ -244,10 +244,11 @@ export default class Transformer {
   transformBlockStatement(node, ancestors) {
     const parentNode = ancestors[ancestors.length - 2];
     const grandParentNode = ancestors[ancestors.length - 3];
+    const isFunction = parentNode?.type.indexOf('Function') !== -1;
     const undefinedIdentifier = this.createIdentifier('undefined');
     const assignmentPatternParamsDeclarators = [];
     let scopeNameIdentifier = undefinedIdentifier;
-    if (parentNode?.type.indexOf('Function') !== -1) {
+    if (isFunction) {
       scopeNameIdentifier = this.createLiteral('(anonymous)');
       if (parentNode.id?.name) {
         scopeNameIdentifier = this.createLiteral(parentNode.id?.name);
@@ -270,7 +271,33 @@ export default class Transformer {
         }
       });
     }
-    const cookedBody = [];
+    const cookedBody = [
+      ...(
+        assignmentPatternParamsDeclarators.length
+          ? [this.createVariableDeclaration('let', assignmentPatternParamsDeclarators)]
+          : []
+      ),
+      this.createExpressionStatement(
+        this.createSequenceExpression([
+          this.createBreakpointExpression(node, true),
+          this.createCallExpression(
+            this.createIdentifier(SCOPE_TRACER_NAME),
+            [
+              this.createLiteral(true),
+              this.createFunctionExpression(
+                this.createCallExpression(
+                  this.createIdentifier('eval'),
+                  [this.createIdentifier('x')]
+                ),
+                [this.createIdentifier('x')],
+                'ArrowFunctionExpression', false
+              ),
+              scopeNameIdentifier
+            ]
+          )
+        ])
+      )
+    ];
     node.body.forEach((bodyNode) => cookedBody.push(
       // 给每个语句前都插入断点
       this.createExpressionStatement(
@@ -278,35 +305,9 @@ export default class Transformer {
       ),
       bodyNode
     ));
-    node.body = [
+    node.body = isFunction ? cookedBody : [
       this.createTryStatement(
-        this.createBlockStatement([
-          ...(
-            assignmentPatternParamsDeclarators.length
-              ? [this.createVariableDeclaration('let', assignmentPatternParamsDeclarators)]
-              : []
-          ),
-          this.createExpressionStatement(
-            this.createSequenceExpression([
-              this.createBreakpointExpression(node, true),
-              this.createCallExpression(
-                this.createIdentifier(SCOPE_TRACER_NAME),
-                [
-                  this.createLiteral(true),
-                  this.createFunctionExpression(
-                    this.createCallExpression(
-                      this.createIdentifier('eval'),
-                      [this.createIdentifier('x')]
-                    ),
-                    [this.createIdentifier('x')],
-                    'ArrowFunctionExpression', false
-                  ),
-                  scopeNameIdentifier
-                ]
-              )
-            ])
-          )
-        ].concat(cookedBody)),
+        this.createBlockStatement(cookedBody),
         null,
         this.createBlockStatement([
           this.createExpressionStatement(
@@ -442,6 +443,7 @@ export default class Transformer {
 
   // 转换function
   transformFunction(node) {
+    const thisIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 't');
     const ctorIdentifier = this.createIdentifier(CLASS_CONSTRUCTOR_NAME);
     const nwTgIdentifier = this.createIdentifier(NEW_TARGET_NAME);
     const functionBody = node.body.type === 'BlockStatement'
@@ -472,21 +474,45 @@ export default class Transformer {
           this.createSequenceExpression([
             this.createAssignmentExpression(
               this.createMemberExpression(
-                this.createThisExpression(),
+                thisIdentifier,
                 ctorIdentifier
               ),
               ctorIdentifier
             ),
-            this.createThisExpression()
+            thisIdentifier
           ]),
           this.createCallExpression(
-            this.createIdentifier(EXECUTOR_FUNC_NAME),
-            [this.createCallExpression(
-              this.createMemberExpression(
-                ctorIdentifier,
-                this.createIdentifier('call')
-              ), [this.createThisExpression()]
-            )]
+            this.createIdentifier(EXECUTOR_FUNC_NAME), [
+              this.createCallExpression(
+                this.createFunctionExpression(
+                  this.createBlockStatement([
+                    this.createTryStatement(
+                      this.createBlockStatement([
+                        this.createReturnStatement(
+                          this.createYieldExpression(
+                            this.createCallExpression(
+                              this.createMemberExpression(
+                                ctorIdentifier,
+                                this.createIdentifier('call')
+                              ), [thisIdentifier]
+                            )
+                          )
+                        )
+                      ]),
+                      null,
+                      this.createBlockStatement([
+                        this.createExpressionStatement(
+                          this.createCallExpression(
+                            this.createIdentifier(SCOPE_TRACER_NAME),
+                            [this.createLiteral(false)]
+                          )
+                        )
+                      ])
+                    )
+                  ])
+                )
+              )
+            ]
           )
         )
       )

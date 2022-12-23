@@ -290,10 +290,14 @@ function* newObject(constructor, args, target) {
   }
   const obj = Reflect.construct(constructor, args, arguments.length > 2 ? target : constructor);
   if (obj[CLASS_CONSTRUCTOR_NAME]) {
-    const ret = yield* obj[CLASS_CONSTRUCTOR_NAME](...args);
-    delete obj[CLASS_CONSTRUCTOR_NAME];
-    if (ret && (typeof ret === 'object' || typeof ret === 'function')) {
-      return ret;
+    try {
+      const ret = yield* obj[CLASS_CONSTRUCTOR_NAME](...args);
+      delete obj[CLASS_CONSTRUCTOR_NAME];
+      if (ret && (typeof ret === 'object' || typeof ret === 'function')) {
+        return ret;
+      }
+    } finally {
+      scope(false);
     }
   }
   return obj;

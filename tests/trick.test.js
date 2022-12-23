@@ -15,15 +15,15 @@ describe('trick tests', () => {
     run();
   });
 
-  // it('redeclare in function scope normally', () => {
-  //   const run = vDebugger.debug(
-  //     'function b() {\n' +
-  //     '  function a() {}\n' +
-  //     '  var a;\n' +
-  //     '}'
-  //   );
-  //   expect(run).toBeTruthy();
+  it('redeclare in function scope normally', () => {
+    const run = vDebugger.debug(
+      'function b() {\n' +
+      '  function a() {}\n' +
+      '  var a;\n' +
+      '}'
+    );
+    expect(run).toBeTruthy();
 
-  //   run();
-  // });
+    run();
+  });
 });
