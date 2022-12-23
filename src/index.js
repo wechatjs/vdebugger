@@ -22,7 +22,7 @@ let pausedInfo = null;
 let resumeOptions = null;
 let resumeExecutor = null;
 let currentBreaker = null;
-let moduleRequest = (importUrl) => nativeFetch(importUrl, { mode: 'cors' }).then((res) => res.text());
+let moduleRequest = (importUrl) => nativeFetch(importUrl).then((res) => res.text());
 
 if (!nativeEval) {
   supported = false;
