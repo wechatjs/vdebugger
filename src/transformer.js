@@ -143,8 +143,10 @@ export default class Transformer {
       `${CLASS_CREATE_NAME},${IMPORT_REQ_NAME},${IMPORT_FUNC_NAME}` +
     '){' +
       'try{' +
-        `${SCOPE_TRACER_NAME}(true,x=>eval(x),'(global)');` + 
-        `${generate(ast, process.env.NODE_ENV === 'production' ? { indent: '', lineEnd: '' } : {})}` +
+        'return yield* (function* () {' +
+          `${SCOPE_TRACER_NAME}(true,x=>eval(x),'(global)');` +
+          `${generate(ast, process.env.NODE_ENV === 'production' ? { indent: '', lineEnd: '' } : {})}` +
+        '})()' +
       '}finally{' +
         `${SCOPE_TRACER_NAME}(false)` +
       '}' +
