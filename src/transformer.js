@@ -509,7 +509,7 @@ export default class Transformer {
                         )
                       ])
                     )
-                  ])
+                  ]), [], 'FunctionExpression', true, node.async
                 )
               )
             ]

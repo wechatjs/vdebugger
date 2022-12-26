@@ -176,7 +176,9 @@ function executor(generator, result) {
     }
     if (typeof ret.then === 'function') {
       // 如果是async function，等resolve后再继续
-      return breaker(ret.then((res) => executor(generator, res)));
+      return new nativePromise((resolve, reject) => {
+        ret.then((res) => resolve(executor(generator, res))).catch(reject);
+      });
     }
     if (!skip && isBreaker(ret.value) && typeof ret.value[EXECUTOR_BREAK_NAME][0].then !== 'function') {
       const [
