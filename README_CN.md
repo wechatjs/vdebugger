@@ -1,4 +1,4 @@
-# vDebugger &middot; [![npm](https://img.shields.io/npm/v/vdebugger.svg?style=flat-square)](https://www.npmjs.com/package/vdebugger) [![github-actions](https://img.shields.io/github/workflow/status/wechatjs/vdebugger/Coverage.svg?style=flat-square)](https://github.com/wechatjs/vdebugger/actions/workflows/coverage.yml) [![coveralls](https://img.shields.io/coveralls/github/wechatjs/vdebugger.svg?style=flat-square)](https://coveralls.io/github/wechatjs/vdebugger)
+# vDebugger &middot; [![npm](https://img.shields.io/npm/v/vdebugger.svg?style=flat-square)](https://www.npmjs.com/package/vdebugger) [![github-actions](https://img.shields.io/github/actions/workflow/status/wechatjs/vdebugger/coverage.yml?style=flat-square)](https://github.com/wechatjs/vdebugger/actions/workflows/coverage.yml) [![coveralls](https://img.shields.io/coveralls/github/wechatjs/vdebugger.svg?style=flat-square)](https://coveralls.io/github/wechatjs/vdebugger)
 
 **[English](./README.md) | 简体中文**
 
