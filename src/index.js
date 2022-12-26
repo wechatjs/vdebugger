@@ -174,77 +174,93 @@ function executor(generator, result) {
       }
       throw err;
     }
+    const checkIfBreak = (breakRet) => {
+      if (!skip && isBreaker(breakRet.value) && typeof breakRet.value[EXECUTOR_BREAK_NAME][0].then !== 'function') {
+        const [
+          debuggerId, // 调试id，通常为脚本的url
+          breakpointId, // 断点id
+          lineNumber, // 断点行号
+          columnNumber, // 断点列号
+          scopeBlocker // 是否为作用域阻塞执行的断点
+        ] = breakRet.value[EXECUTOR_BREAK_NAME];
+        if (scopeBlocker) {
+          // 如果是作用域阻塞执行的断点，那么继续执行
+          return;
+        } else {
+          // 否则记录一下调用帧信息
+          Scope.updateCallFrame({ debuggerId, lineNumber, columnNumber });
+        }
+        if (pause === 1) {
+          // 如果被手动暂停了，那就直接当成命中断点处理
+          pause = 0;
+        } else {
+          if (!active) {
+            // 如果当前禁用了断点，那么继续执行
+            return;
+          }
+          const condition = Transformer.breakpointMap.get(breakpointId);
+          if (!condition && ['stepInto', 'stepOver', 'stepOut'].indexOf(resumeOptions?.type) === -1) {
+            // 如果没有命中断点，并且不是单步调试，那么继续执行
+            return;
+          }
+          const callFrameId = Scope.getCurrentCallFrameId();
+          if (resumeOptions?.type === 'stepOver' && resumeOptions?.callFrameId < callFrameId) {
+            // 如果是跳过当前函数，但进入到子函数了，那么继续执行
+            return;
+          }
+          if (resumeOptions?.type === 'stepOut' && resumeOptions?.callFrameId <= callFrameId) {
+            // 如果是跳出当前函数，但仍在函数内，那么继续执行
+            return;
+          }
+          if (typeof condition === 'string') {
+            // 对于条件断点和日志断点，执行一下表达式，再判断是否需要中断
+            const conditionRes = evaluate(condition, callFrameId);
+            if (!conditionRes || condition.startsWith('/** DEVTOOLS_LOGPOINT */')) {
+              return;
+            }
+          }
+        }
+        // 否则，就是命中断点，中断执行
+        enableSandbox(false);
+        emitEventListener('paused', pausedInfo = {
+          breakpointId,
+          debuggerId,
+          lineNumber,
+          columnNumber,
+          scopeChain: getScopeChain(),
+          scriptContent: getScriptContent(debuggerId)
+        });
+        // 记录全局当前断点
+        return currentBreaker = breaker(new nativePromise((resolve, reject) => {
+          resumeExecutor = () => {
+            try {
+              resolve(executor(generator, breakRet));
+            } catch (err) {
+              reject(err);
+            }
+          };
+        }), 1);
+      }
+    };
     if (typeof ret.then === 'function') {
       // 如果是async function，等resolve后再继续
       return new nativePromise((resolve, reject) => {
-        ret.then((res) => resolve(executor(generator, res))).catch(reject);
+        ret.then((resolvedRet) => {
+          const res = checkIfBreak(resolvedRet);
+          if (res) {
+            // 如果是promise，中断执行，等resolve后继续执行
+            const nextBreaker = breaker(res[EXECUTOR_BREAK_NAME][0].then(resolve).catch(reject));
+            nextBreaker[EXECUTOR_BREAK_NAME].push(1);
+            currentBreaker = nextBreaker;
+          } else {
+            resolve(executor(generator, resolvedRet));
+          }
+        }).catch(reject);
       });
     }
-    if (!skip && isBreaker(ret.value) && typeof ret.value[EXECUTOR_BREAK_NAME][0].then !== 'function') {
-      const [
-        debuggerId, // 调试id，通常为脚本的url
-        breakpointId, // 断点id
-        lineNumber, // 断点行号
-        columnNumber, // 断点列号
-        scopeBlocker // 是否为作用域阻塞执行的断点
-      ] = ret.value[EXECUTOR_BREAK_NAME];
-      if (scopeBlocker) {
-        // 如果是作用域阻塞执行的断点，那么继续执行
-        continue;
-      } else {
-        // 否则记录一下调用帧信息
-        Scope.updateCallFrame({ debuggerId, lineNumber, columnNumber });
-      }
-      if (pause === 1) {
-        // 如果被手动暂停了，那就直接当成命中断点处理
-        pause = 0;
-      } else {
-        if (!active) {
-          // 如果当前禁用了断点，那么继续执行
-          continue;
-        }
-        const condition = Transformer.breakpointMap.get(breakpointId);
-        if (!condition && ['stepInto', 'stepOver', 'stepOut'].indexOf(resumeOptions?.type) === -1) {
-          // 如果没有命中断点，并且不是单步调试，那么继续执行
-          continue;
-        }
-        const callFrameId = Scope.getCurrentCallFrameId();
-        if (resumeOptions?.type === 'stepOver' && resumeOptions?.callFrameId < callFrameId) {
-          // 如果是跳过当前函数，但进入到子函数了，那么继续执行
-          continue;
-        }
-        if (resumeOptions?.type === 'stepOut' && resumeOptions?.callFrameId <= callFrameId) {
-          // 如果是跳出当前函数，但仍在函数内，那么继续执行
-          continue;
-        }
-        if (typeof condition === 'string') {
-          // 对于条件断点和日志断点，执行一下表达式，再判断是否需要中断
-          const conditionRes = evaluate(condition, callFrameId);
-          if (!conditionRes || condition.startsWith('/** DEVTOOLS_LOGPOINT */')) {
-            continue;
-          }
-        }
-      }
-      // 否则，就是命中断点，中断执行
-      enableSandbox(false);
-      emitEventListener('paused', pausedInfo = {
-        breakpointId,
-        debuggerId,
-        lineNumber,
-        columnNumber,
-        scopeChain: getScopeChain(),
-        scriptContent: getScriptContent(debuggerId)
-      });
-      // 记录全局当前断点
-      return currentBreaker = breaker(new nativePromise((resolve, reject) => {
-        resumeExecutor = () => {
-          try {
-            resolve(executor(generator, ret));
-          } catch (err) {
-            reject(err);
-          }
-        };
-      }), 1);
+    const res = checkIfBreak(ret);
+    if (res) {
+      return res;
     }
   }
   return ret.value;

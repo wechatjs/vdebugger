@@ -384,4 +384,6 @@ describe('breakpoint tests', () => {
     expect(pausedInfo.data).toBeInstanceOf(ReferenceError);
     expect(window.__trans_res__).toEqual(99999);
   });
+
+  // 当前测试到此为止，因为最后一个测试用例是用于测试异常中断的，不会再恢复了
 });
