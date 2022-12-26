@@ -83,9 +83,9 @@ export default class Transformer {
         // 把所有箭头函数表达式改成generator
         this.transformFunction(node);
       },
-      CallExpression: (node) => {
+      CallExpression: (node, ancestors) => {
         // 对于被debugger转换成generator函数的调用，套一层yield语句
-        this.transformCallExpression(node);
+        this.transformCallExpression(node, ancestors);
       },
       MemberExpression: (node, ancestors) => {
         // 对于被debugger转换成generator函数的调用，套一层yield语句
@@ -428,7 +428,7 @@ export default class Transformer {
   }
 
   // 转换函数调用
-  transformCallExpression(node) {
+  transformCallExpression(node, ancestors) {
     if (node.type === 'YieldExpression') {
       // 如果已经被转换成yield了，就不用再处理了
       return;
@@ -436,7 +436,13 @@ export default class Transformer {
     if (node.callee.type === 'Super') {
       // 由于class constructor转换了，所以无法直接调用super构造函数，这里也转换一下，主动调用父类相应的generator
       node.callee = this.createMemberExpression(node.callee, this.createIdentifier(CLASS_CONSTRUCTOR_NAME));
-      Object.assign(node, this.createYieldExpression(Object.assign({}, node)))
+      Object.assign(node, this.createYieldExpression(Object.assign({}, node)));
+      return;
+    }
+    const parentNode = ancestors[ancestors.length - 2];
+    if (parentNode.type === 'ChainExpression') {
+      Object.assign(parentNode, this.createYieldExpression(Object.assign({}, parentNode), false));
+      return;
     }
     Object.assign(node, this.createYieldExpression(Object.assign({}, node), false));
   }

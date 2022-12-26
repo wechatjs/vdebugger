@@ -41,5 +41,20 @@ describe('compiler tests', () => {
     expect(pausedInfo3).toBeFalsy();
     expect(window.__trans_res__).toEqual(5);
   });
+
+  it('compile chain expression normally', () => {
+    const res = vDebugger.transform(
+      'const a = { b: () => 7 }\n' +
+      'window.__trans_res__ = 6 && a?.b();\n'
+    , 'chain-expr-transform.js');
+    expect(res).toBeTruthy();
+
+    const run = vDebugger.debug(res);
+    expect(run).toBeTruthy();
+
+    run();
+
+    expect(window.__trans_res__).toEqual(7);
+  });
 });
  
