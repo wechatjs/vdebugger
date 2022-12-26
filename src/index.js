@@ -244,19 +244,17 @@ function executor(generator, result) {
     };
     if (typeof ret.then === 'function') {
       // 如果是async function，等resolve后再继续
-      return new nativePromise((resolve, reject) => {
-        ret.then((resolvedRet) => {
-          const res = checkIfBreak(resolvedRet);
-          if (res) {
-            // 如果是promise，中断执行，等resolve后继续执行
-            const nextBreaker = breaker(res[EXECUTOR_BREAK_NAME][0].then(resolve).catch(reject));
-            nextBreaker[EXECUTOR_BREAK_NAME].push(1);
-            currentBreaker = nextBreaker;
-          } else {
-            resolve(executor(generator, resolvedRet));
-          }
-        }).catch(reject);
-      });
+      return ret.then((resolvedRet) => new nativePromise((resolve, reject) => {
+        const res = checkIfBreak(resolvedRet);
+        if (res) {
+          // 如果是promise，中断执行，等resolve后继续执行
+          const nextBreaker = breaker(res[EXECUTOR_BREAK_NAME][0].then(resolve).catch(reject));
+          nextBreaker[EXECUTOR_BREAK_NAME].push(1);
+          currentBreaker = nextBreaker;
+        } else {
+          resolve(executor(generator, resolvedRet));
+        }
+      }));
     }
     const res = checkIfBreak(ret);
     if (res) {
