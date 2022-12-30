@@ -245,8 +245,10 @@ function executor(generator, result) {
     if (typeof ret.then === 'function') {
       // 如果是async function，等resolve后再继续
       return ret.then((resolvedRet) => {
-        const res = checkIfBreak(resolvedRet);
-        return res?.[EXECUTOR_BREAK_NAME][0] || executor(generator, resolvedRet);
+        // TODO: async断点不符合预期，排查需要些时间，先忽略断点
+        // const res = checkIfBreak(resolvedRet);
+        // return res?.[EXECUTOR_BREAK_NAME][0] || executor(generator, resolvedRet);
+        return executor(generator, resolvedRet);
       });
     }
     const res = checkIfBreak(ret);
