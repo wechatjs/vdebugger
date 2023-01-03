@@ -532,7 +532,7 @@ export function setBreakpoint(debuggerId, lineNumber, columnNumber, condition) {
   }
   if (typeof columnNumber === 'string') {
     condition = columnNumber;
-    columnNumber = 0;
+    columnNumber = null;
   }
   const transformer = transformerMap.get(debuggerId);
   if (transformer) {

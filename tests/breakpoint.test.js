@@ -366,6 +366,25 @@ describe('breakpoint tests', () => {
     expect(window.__trans_res__).toEqual(29); // 会先赋值28，因为是同步的，再回去setTimeout赋值29，因为是异步的
   });
 
+  it('break column normally', () => {
+    const run = vDebugger.debug(
+      'window.__trans_res__ = 30; window.__trans_res__ = 31; window.__trans_res__ = 32;'
+    , 'breakpoint-column.js');
+    expect(run).toBeTruthy();
+    expect(resumedEventRes).toBeTruthy();
+
+    const breakColumn = 27;
+    vDebugger.setBreakpoint('breakpoint-column.js', 1, breakColumn);
+
+    run();
+    const pausedInfo = vDebugger.getPausedInfo();
+    expect(pausedInfo.columnNumber).toEqual(breakColumn);
+    expect(window.__trans_res__).toEqual(30);
+
+    vDebugger.resume();
+    expect(window.__trans_res__).toEqual(32);
+  });
+
   it('pause exception normally', async () => {
     const run = vDebugger.debug(
       'window.__trans_res__ = 99999;\n' +
