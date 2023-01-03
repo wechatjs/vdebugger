@@ -1,5 +1,5 @@
 type ResumeType = 'stepInto' | 'stepOver' | 'stepOut'
-interface Breakpoint { id: number, lineNumber: number }
+interface Breakpoint { id: number, lineNumber: number, columnNumber: number }
 interface CallFrame { debuggerId: string, lineNumber: number, columnNumber: number }
 interface Scope { eval: (expression: string) => any, name: string, callFrameId: number, callFrame?: CallFrame }
 interface ErrorInfo { error: Error, scopeChain: Scope[] }
