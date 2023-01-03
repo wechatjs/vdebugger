@@ -72,16 +72,17 @@ function evaluate<Result = unknown>(expression: string, callFrameId?: number): R
 
 ## `setBreakpoint`
 
-根据调试ID设置断点。接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` 和可选条件 `condition`。
+根据调试ID设置断点。接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` 和可选条件 `condition`。或者，接受四个参数，分别是调试ID `debuggerId`、行号 `lineNumber`、列号 `columnNumber` 和可选条件 `condition`。
 
-其中，可选条件为一段脚本，当该脚本返回为 `true` 时会中断执行，如果没有条件，则默认到该脚本对应行时都中断执行。
+其中，行号从`1`开始，列号从`0`开始。另外，可选条件为一段脚本，当该脚本返回为 `true` 时会中断执行，如果没有条件，则默认到该脚本对应行时都中断执行。
 
-如果设置成功，该接口会返回断点信息，包括断点ID `id` 和实际行号 `lineNumber`；如果设置不成功，则返回 `false`。
+如果设置成功，该接口会返回断点信息，包括断点ID `id` 、实际行号 `lineNumber` 和实际列号 `columnNumber`；如果设置不成功，则返回 `false`。
 
 ```ts
 function setBreakpoint(debuggerId: string, lineNumber: number, condition?: string): Breakpoint | false
+function setBreakpoint(debuggerId: string, lineNumber: number, columnNumber: number, condition?: string): Breakpoint | false
 
-interface Breakpoint { id: number, lineNumber: number }
+interface Breakpoint { id: number, lineNumber: number, columnNumber: number }
 ```
 
 ## `removeBreakpoint`

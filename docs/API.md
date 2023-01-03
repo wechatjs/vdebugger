@@ -72,14 +72,15 @@ function evaluate<Result = unknown>(expression: string, callFrameId?: number): R
 
 ## `setBreakpoint`
 
-Set breakpoints by script debug id. Three arguments accepted, which are script debug id `debuggerId`, line number `lineNumber` and optional break condition `condition`, respectively.
+Set breakpoints by script debug id. Three arguments accepted, which are script debug id `debuggerId`, line number `lineNumber` and optional break condition `condition`, respectively. Or, four arguments accepted, which are script debug id `debuggerId`, line number `lineNumber`, column number `columnNumber` and optional break condition `condition`, respectively.
 
-The `condition` is an expression string, and execution will be paused if the evaluation returns `true`. If `condition` missed, execution will be paused when hitting the corresponding line defined by `lineNumber`, by default.
+The `lineNumber` starts from `1`, and the `columnNumber` starts from `0`. Besides, the `condition` is an expression string, and execution will be paused if the evaluation returns `true`. If `condition` missed, execution will be paused when hitting the corresponding line defined by `lineNumber`, by default.
 
 If set succeeds, this method returns the breakpoint info, including breakpoint id `id` and exact break line number `lineNumber`. Or, if set fails, this method returns `false`.
 
 ```ts
 function setBreakpoint(debuggerId: string, lineNumber: number, condition?: string): Breakpoint | false
+function setBreakpoint(debuggerId: string, lineNumber: number, columnNumber: number, condition?: string): Breakpoint | false
 
 interface Breakpoint { id: number, lineNumber: number }
 ```
