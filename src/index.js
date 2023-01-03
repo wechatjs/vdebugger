@@ -399,7 +399,7 @@ function getDebugProgram(script, transformer) {
     ] = JSON.parse(script.slice(TRANSFORMED_MARK.length));
 
     transformer.debuggerId = debuggerId || transformer.debuggerId;
-    transformer.lineBreakpointIdMap = new Map(lBpIdMInit);
+    transformer.lineBreakpointIdsMap = new Map(lBpIdMInit);
 
     staticBpMInit.forEach(([key, value]) => {
       if (!Transformer.breakpointMap.has(key)) {
@@ -478,7 +478,7 @@ export function transform(script, debuggerId) {
   // console.warn(debugProgram);
 
   // 格式化数据结构
-  const lBpIdMEntries = transformer.lineBreakpointIdMap.entries();
+  const lBpIdMEntries = transformer.lineBreakpointIdsMap.entries();
   const staticBpMEntries = Transformer.breakpointMap.entries();
   const result = [transformer.debuggerId, debugProgram, [...lBpIdMEntries], [...staticBpMEntries]];
 
@@ -523,19 +523,32 @@ export function evaluate(expression, callFrameId) {
  * 设置断点
  * @param {String} debuggerId 调试id，通常为脚本的url
  * @param {Number} lineNumber 尝试断点的行号
+ * @param {String} columnNumber 尝试断点的列号
  * @param {String} condition 断点条件
  */
-export function setBreakpoint(debuggerId, lineNumber, condition) {
+export function setBreakpoint(debuggerId, lineNumber, columnNumber, condition) {
   if (typeof debuggerId !== 'string' || typeof lineNumber !== 'number') {
     return false;
   }
+  if (typeof columnNumber === 'string') {
+    condition = columnNumber;
+    columnNumber = 0;
+  }
   const transformer = transformerMap.get(debuggerId);
   if (transformer) {
-    for (let ln = lineNumber; ln < lineNumber + 50; ln++) { // 向下找最多50行
-      const id = transformer.lineBreakpointIdMap.get(ln);
+    for (let l = lineNumber; l < lineNumber + 50; l++) { // 向下找最多50行
+      const lineBreakpointIds = transformer.lineBreakpointIdsMap.get(l);
+      let id;
+      if (typeof columnNumber === 'number') {
+        for (let c = columnNumber; c < columnNumber + 100; c++) { // 向右找最多100列
+          if (id = lineBreakpointIds[c]) break;
+        }
+      } else {
+        id = Object.values(lineBreakpointIds)[0];
+      }
       if (id) {
         Transformer.breakpointMap.set(id, typeof condition === 'string' && condition || true);
-        return { id, lineNumber: ln };
+        return { id, lineNumber: l };
       }
     }
   }

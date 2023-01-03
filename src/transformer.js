@@ -25,7 +25,7 @@ export default class Transformer {
   scriptContent = '';
   importNodeList = [];
   exportDeclarationNodeList = [];
-  lineBreakpointIdMap = new Map();
+  lineBreakpointIdsMap = new Map();
 
   constructor(debuggerId) {
     this.debuggerId = debuggerId || Transformer.genTmpDebuggerId();
@@ -203,7 +203,14 @@ export default class Transformer {
     if (blocker) {
       params.push(this.createLiteral(blocker));
     } else {
-      this.lineBreakpointIdMap.set(node.loc.start.line, breakpointId);
+      const lineBreakpointIds = this.lineBreakpointIdsMap.get(node.loc.start.line);
+      if (lineBreakpointIds) {
+        lineBreakpointIds[node.loc.start.column] = breakpointId;
+      } else {
+        this.lineBreakpointIdsMap.set(node.loc.start.line, {
+          [node.loc.start.column]: breakpointId
+        });
+      }
     }
     return this.createYieldExpression(
       this.createCallExpression(

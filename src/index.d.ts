@@ -27,6 +27,7 @@ export declare function transform(script: string, debuggerId?: string): string |
 export declare function resume(type?: ResumeType): boolean
 export declare function evaluate<Result = unknown>(expression: string, callFrameId?: number): Result | false
 export declare function setBreakpoint(debuggerId: string, lineNumber: number, condition?: string): Breakpoint | false
+export declare function setBreakpoint(debuggerId: string, lineNumber: number, columnNumber: number, condition?: string): Breakpoint | false
 export declare function removeBreakpoint(id: number): boolean
 export declare function setBreakpointsActive(value: boolean): boolean
 export declare function setExecutionPause(value: boolean): boolean
