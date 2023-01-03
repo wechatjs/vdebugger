@@ -523,7 +523,7 @@ export function evaluate(expression, callFrameId) {
  * 设置断点
  * @param {String} debuggerId 调试id，通常为脚本的url
  * @param {Number} lineNumber 尝试断点的行号
- * @param {String} columnNumber 尝试断点的列号
+ * @param {Number} columnNumber 尝试断点的列号
  * @param {String} condition 断点条件
  */
 export function setBreakpoint(debuggerId, lineNumber, columnNumber, condition) {
