@@ -539,12 +539,14 @@ export function setBreakpoint(debuggerId, lineNumber, columnNumber, condition) {
     for (let l = lineNumber; l < lineNumber + 50; l++) { // 向下找最多50行
       const lineBreakpointIds = transformer.lineBreakpointIdsMap.get(l);
       let id;
-      if (typeof columnNumber === 'number') {
-        for (let c = columnNumber; c < columnNumber + 100; c++) { // 向右找最多100列
-          if (id = lineBreakpointIds[c]) break;
+      if (lineBreakpointIds) {
+        if (typeof columnNumber === 'number') {
+          for (let c = columnNumber; c < columnNumber + 100; c++) { // 向右找最多100列
+            if (id = lineBreakpointIds[c]) break;
+          }
+        } else {
+          id = Object.values(lineBreakpointIds)[0];
         }
-      } else {
-        id = Object.values(lineBreakpointIds)[0];
       }
       if (id) {
         Transformer.breakpointMap.set(id, typeof condition === 'string' && condition || true);
