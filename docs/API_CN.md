@@ -6,6 +6,7 @@
 - [`transform`](#transform)
 - [`resume`](#resume)
 - [`evaluate`](#evaluate)
+- [`getPossibleBreakpoints`](#getPossibleBreakpoints)
 - [`setBreakpoint`](#setbreakpoint)
 - [`removeBreakpoint`](#removebreakpoint)
 - [`setBreakpointsActive`](#setbreakpointsactive)
@@ -70,13 +71,28 @@ type ResumeType = 'stepInto' | 'stepOver' | 'stepOut'
 function evaluate<Result = unknown>(expression: string, callFrameId?: number): Result | false
 ```
 
+## `getPossibleBreakpoints`
+
+获取脚本所有可能的断点。接受一个调试ID的参数。
+
+如果获取成功，该接口会返回所有可能的断点信息的数组，包括所有断点的断点ID `id` 、实际行号 `lineNumber` (从1开始) 和实际列号 `columnNumber` (从0开始)；如果设置不成功，则返回 `false`。
+
+```ts
+function getPossibleBreakpoints(debuggerId: string): Breakpoint[] | false
+
+interface Breakpoint { id: number, lineNumber: number, columnNumber: number }
+```
+
 ## `setBreakpoint`
 
-根据调试ID设置断点。接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` 和可选条件 `condition`。或者，接受四个参数，分别是调试ID `debuggerId`、行号 `lineNumber`、列号 `columnNumber` 和可选条件 `condition`。
+根据调试ID设置断点，包含两个重载：
 
-其中，行号从`1`开始，列号从`0`开始。另外，可选条件为一段脚本，当该脚本返回为 `true` 时会中断执行，如果没有条件，则默认到该脚本对应行时都中断执行。
+1. 接受三个参数，分别是调试ID `debuggerId`、行号 `lineNumber` (从1开始) 和可选条件 `condition`；
+2. 接受四个参数，分别是调试ID `debuggerId`、行号 `lineNumber` (从1开始)、列号 `columnNumber` (从0开始) 和可选条件 `condition`。
 
-如果设置成功，该接口会返回断点信息，包括断点ID `id` 、实际行号 `lineNumber` 和实际列号 `columnNumber`；如果设置不成功，则返回 `false`。
+另外，可选条件为一段脚本，当该脚本返回为 `true` 时会中断执行，如果没有条件，则默认到该脚本对应位置时都中断执行。
+
+如果设置成功，该接口会返回断点信息，包括断点ID `id` 、实际行号 `lineNumber` (从1开始) 和实际列号 `columnNumber` (从0开始)；如果设置不成功，则返回 `false`。
 
 ```ts
 function setBreakpoint(debuggerId: string, lineNumber: number, condition?: string): Breakpoint | false
@@ -119,7 +135,7 @@ function setExceptionPause(value: boolean): boolean
 
 ## `getPausedInfo`
 
-获取断点信息。当目前处于暂停状态时，返回的当前断点相关信息，包括调试ID `debuggerId`、断点ID `breakpointId`、行号 `lineNumber`、列号 `columnNumber`、作用域链 `scopeChain` 以及调试源码 `scriptContent`。当目前没有处在暂停状态时，返回 `false`。
+获取断点信息。当目前处于暂停状态时，返回的当前断点相关信息，包括调试ID `debuggerId`、断点ID `breakpointId`、行号 `lineNumber` (从1开始)、列号 `columnNumber` (从0开始)、作用域链 `scopeChain` 以及调试源码 `scriptContent`。当目前没有处在暂停状态时，返回 `false`。
 
 其中，作用域链 `scopeChain` 包括全局、函数和块级作用域，可通过是否有调用帧 `callFrame` 字段来判断是否是全局或函数作用域。过滤出作用域链中含有调用帧的作用域，即可获得调用栈。
 

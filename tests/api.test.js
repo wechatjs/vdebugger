@@ -50,5 +50,17 @@ describe('api tests', () => {
   it('set module request params check normally', () => {
     expect(vDebugger.setModuleRequest(1)).toBeFalsy(); // request非函数
   });
+
+  it('get possible breakpoints normally', () => {
+    const debuggerId = 'possible-breakpoints';
+    vDebugger.debug('1;2;3;4\n5;6', debuggerId);
+    const breakpoints = vDebugger.getPossibleBreakpoints(debuggerId);
+    expect(breakpoints.length).toBe(6);
+    expect(breakpoints[0].lineNumber).toBe(1);
+    expect(breakpoints[5].lineNumber).toBe(2);
+    expect(breakpoints[3].columnNumber).toBe(6);
+    expect(vDebugger.getPossibleBreakpoints(1)).toBeFalsy(); // debuggerId非字符串
+    expect(vDebugger.getPossibleBreakpoints('1')).toBeFalsy(); // 未能根据debuggerId找到脚本
+  });
 });
  

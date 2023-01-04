@@ -26,6 +26,7 @@ export declare function debug(script: string, debuggerId?: string): (() => void)
 export declare function transform(script: string, debuggerId?: string): string | false
 export declare function resume(type?: ResumeType): boolean
 export declare function evaluate<Result = unknown>(expression: string, callFrameId?: number): Result | false
+export declare function getPossibleBreakpoints(debuggerId: string): Breakpoint[] | false
 export declare function setBreakpoint(debuggerId: string, lineNumber: number, condition?: string): Breakpoint | false
 export declare function setBreakpoint(debuggerId: string, lineNumber: number, columnNumber: number, condition?: string): Breakpoint | false
 export declare function removeBreakpoint(id: number): boolean
@@ -47,6 +48,7 @@ declare const vDebugger: {
   transform: typeof transform,
   resume: typeof resume,
   evaluate: typeof evaluate,
+  getPossibleBreakpoints: typeof getPossibleBreakpoints,
   setBreakpoint: typeof setBreakpoint,
   removeBreakpoint: typeof removeBreakpoint,
   setBreakpointsActive: typeof setBreakpointsActive,

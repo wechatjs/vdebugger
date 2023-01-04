@@ -520,10 +520,32 @@ export function evaluate(expression, callFrameId) {
 }
 
 /**
+ * 获取脚本所有可能的断点
+ * @param {String} debuggerId 调试id，通常为脚本的url
+ */
+export function getPossibleBreakpoints(debuggerId) {
+  if (typeof debuggerId !== 'string') {
+    return false;
+  }
+  const transformer = transformerMap.get(debuggerId);
+  if (transformer) {
+    let breakpoints = [];
+    for (const [lineNumber, lineBreakpointIds] of transformer.lineBreakpointIdsMap.entries()) {
+      breakpoints = breakpoints.concat(
+        Object.keys(lineBreakpointIds)
+          .map((c) => ({ id: lineBreakpointIds[c], lineNumber, columnNumber: c * 1 }))
+      );
+    }
+    return breakpoints;
+  }
+  return false;
+}
+
+/**
  * 设置断点
  * @param {String} debuggerId 调试id，通常为脚本的url
  * @param {Number} lineNumber 尝试断点的行号
- * @param {Number} columnNumber 尝试断点的列号
+ * @param {Number} columnNumber 尝试断点的列号（或断点条件，重载）
  * @param {String} condition 断点条件
  */
 export function setBreakpoint(debuggerId, lineNumber, columnNumber, condition) {
@@ -541,7 +563,7 @@ export function setBreakpoint(debuggerId, lineNumber, columnNumber, condition) {
       if (lineBreakpointIds) {
         let id, c;
         if (typeof columnNumber === 'number') {
-          for (c = columnNumber; c < columnNumber + 100; c++) { // 向右找最多100列
+          for (c = columnNumber; c < columnNumber + 200; c++) { // 向右找最多200列
             if (id = lineBreakpointIds[c]) break;
           }
         } else {
@@ -666,7 +688,7 @@ export function setModuleRequest(request) {
 
 export { version, addEventListener, removeEventListener }
 export default {
-  version, debug, transform, resume, evaluate, setBreakpoint, removeBreakpoint, setBreakpointsActive,
-  setExecutionPause, setExceptionPause, getPausedInfo, getScopeChain, getScriptContent,
+  version, debug, transform, resume, evaluate, getPossibleBreakpoints, setBreakpoint, removeBreakpoint,
+  setBreakpointsActive, setExecutionPause, setExceptionPause, getPausedInfo, getScopeChain, getScriptContent,
   runInNativeEnv, runInSkipOver, setModuleRequest, addEventListener, removeEventListener,
 }
