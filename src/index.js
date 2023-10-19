@@ -70,6 +70,7 @@ function enableSandbox(enable) {
       'seal', 'setPrototypeOf', 'values'
     ]);
     switchObjectMethod(RegExp.prototype, [Symbol.replace]);
+    switchObjectMethod(Object.prototype, ['hasOwnProperty', 'propertyIsEnumerable', 'toLocaleString', 'toString', 'valueOf']);
     switchObjectMethod(Array.prototype, [
       'at', 'concat', 'copyWithin', 'entries', 'every', 'fill', 'filter', 'find', 'findIndex',
       'findLast', 'findLastIndex', 'flat', 'flatMap', 'forEach', 'includes', 'indexOf', 'join',
