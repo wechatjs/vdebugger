@@ -511,19 +511,19 @@ export default class Transformer {
                   this.createBlockStatement([
                     node.body.type === 'BlockStatement'
                       ? this.createTryStatement(
-                        this.createBlockStatement([
-                          returnCall
-                        ]),
-                        null,
-                        this.createBlockStatement([
-                          this.createExpressionStatement(
-                            this.createCallExpression(
-                              this.createIdentifier(SCOPE_TRACER_NAME),
-                              [this.createLiteral(false)]
+                          this.createBlockStatement([
+                            returnCall
+                          ]),
+                          null,
+                          this.createBlockStatement([
+                            this.createExpressionStatement(
+                              this.createCallExpression(
+                                this.createIdentifier(SCOPE_TRACER_NAME),
+                                [this.createLiteral(false)]
+                              )
                             )
-                          )
-                        ])
-                      )
+                          ])
+                        )
                       : returnCall
                   ]), [], 'FunctionExpression', true, node.async
                 )
