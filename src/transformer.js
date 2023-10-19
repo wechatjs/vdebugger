@@ -462,8 +462,18 @@ export default class Transformer {
     const functionBody = node.body.type === 'BlockStatement'
       ? node.body
       : this.createBlockStatement([
-        this.createReturnStatement(node.body)
-      ]);
+          this.createReturnStatement(node.body)
+        ]);
+    const returnCall = this.createReturnStatement(
+      this.createYieldExpression(
+        this.createCallExpression(
+          this.createMemberExpression(
+            ctorIdentifier,
+            this.createIdentifier('call')
+          ), [thisIdentifier]
+        )
+      )
+    );
     node.expression = false;
     node.body = this.createBlockStatement([
       this.createVariableDeclaration('let', this.createScopeVariableDeclarators()),
@@ -499,29 +509,22 @@ export default class Transformer {
               this.createCallExpression(
                 this.createFunctionExpression(
                   this.createBlockStatement([
-                    this.createTryStatement(
-                      this.createBlockStatement([
-                        this.createReturnStatement(
-                          this.createYieldExpression(
+                    node.body.type === 'BlockStatement'
+                      ? this.createTryStatement(
+                        this.createBlockStatement([
+                          returnCall
+                        ]),
+                        null,
+                        this.createBlockStatement([
+                          this.createExpressionStatement(
                             this.createCallExpression(
-                              this.createMemberExpression(
-                                ctorIdentifier,
-                                this.createIdentifier('call')
-                              ), [thisIdentifier]
+                              this.createIdentifier(SCOPE_TRACER_NAME),
+                              [this.createLiteral(false)]
                             )
                           )
-                        )
-                      ]),
-                      null,
-                      this.createBlockStatement([
-                        this.createExpressionStatement(
-                          this.createCallExpression(
-                            this.createIdentifier(SCOPE_TRACER_NAME),
-                            [this.createLiteral(false)]
-                          )
-                        )
-                      ])
-                    )
+                        ])
+                      )
+                      : returnCall
                   ]), [], 'FunctionExpression', true, node.async
                 )
               )
