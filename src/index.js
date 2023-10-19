@@ -61,8 +61,14 @@ function enableSandbox(enable) {
   }
   if (sandbox !== !!enable) {
     sandbox = !!enable;
-    switchObjectMethod(Array, ['from', 'of', 'isArray']);
+    switchObjectMethod(Array, ['from', 'fromAsync', 'of', 'isArray']);
     switchObjectMethod(String, ['fromCharCode', 'fromCharPoint', 'raw']);
+    switchObjectMethod(Object, [
+      'assign', 'create', 'defineProperties', 'defineProperty', 'entries', 'freeze', 'fromEntries',
+      'getOwnPropertyDescriptor', 'getOwnPropertyDescriptors', 'getOwnPropertyNames', 'getOwnPropertySymbols',
+      'getPrototypeOf', 'groupBy', 'hasOwn', 'is', 'isExtensible', 'isFrozen', 'isSealed', 'keys', 'preventExtensions',
+      'seal', 'setPrototypeOf', 'values'
+    ]);
     switchObjectMethod(RegExp.prototype, [Symbol.replace]);
     switchObjectMethod(Array.prototype, [
       'at', 'concat', 'copyWithin', 'entries', 'every', 'fill', 'filter', 'find', 'findIndex',
