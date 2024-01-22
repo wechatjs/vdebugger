@@ -9,6 +9,7 @@
     "build": "rollup -c --environment NODE_ENV:production && cp src/index.d.ts dist/vdebugger.d.ts",
     "pub": "npm run test && npm run build && npm publish --registry https://registry.npmjs.org",
     "cov": "cat ./coverage/lcov.info | coveralls",
+    "benchmark": "node tests/benchmark.js",
     "test": "jest --colors ---coverage"
   },
   "repository": {
