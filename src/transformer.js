@@ -18,7 +18,7 @@ import {
 } from './consts';
 
 export default class Transformer {
-  static breakpointId = Date.now();
+  static breakpointId = 1;
   static breakpointMap = new Map();
 
   debuggerId = '';
@@ -304,14 +304,13 @@ export default class Transformer {
           )
         ])
       )
-    ];
-    node.body.forEach((bodyNode) => cookedBody.push(
+    ].concat(...node.body.map((bodyNode) => [
       // 给每个语句前都插入断点
       this.createExpressionStatement(
         this.createBreakpointExpression(bodyNode)
       ),
       bodyNode
-    ));
+    ]));
     node.body = isFunction ? cookedBody : [
       this.createTryStatement(
         this.createBlockStatement(cookedBody),
