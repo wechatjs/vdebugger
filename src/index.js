@@ -63,7 +63,11 @@ function isBreaker(value) {
 function checkIfBreak(debuggerId, breakpointId, lineNumber, columnNumber, scopeBlocker) {
   if (!skip) {
     if (scopeBlocker) {
-      // 如果是作用域阻塞执行的断点，那么继续执行
+      // 如果是作用域阻塞执行的断点，且目前命中了断点，暂停执行
+      if (resumeExecutor) {
+        return breaker(debuggerId, breakpointId, lineNumber, columnNumber, scopeBlocker);
+      }
+      // 否则就继续执行
       return;
     } else {
       // 否则记录一下调用帧信息
@@ -99,6 +103,7 @@ function checkIfBreak(debuggerId, breakpointId, lineNumber, columnNumber, scopeB
         }
       }
     }
+    // 否则，就是命中断点，中断执行
     return breaker(debuggerId, breakpointId, lineNumber, columnNumber);
   }
 }

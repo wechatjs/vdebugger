@@ -201,7 +201,7 @@ export default class Transformer {
       this.createLiteral(node.loc.start.column)
     ];
     if (blocker) {
-      params.push(this.createLiteral(blocker));
+      params.push(this.createLiteral(1));
     } else {
       const lineBreakpointIds = this.lineBreakpointIdsMap.get(node.loc.start.line);
       if (lineBreakpointIds) {
@@ -212,22 +212,20 @@ export default class Transformer {
         });
       }
     }
-    const checkCallExpr = this.createCallExpression(
-      this.createIdentifier(EXECUTOR_BREAK_NAME),
-      params
-    );
-    if (blocker) {
-      return this.createYieldExpression(checkCallExpr, false);
-    } else {
-      const tmpYieldIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 'y');
-      return this.createSequenceExpression([
-        this.createAssignmentExpression(tmpYieldIdentifier, checkCallExpr ),
-        this.createLogicalExpression(
-          tmpYieldIdentifier, '&&',
-          this.createYieldExpression(tmpYieldIdentifier, false)
+    const tmpYieldIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 'y');
+    return this.createSequenceExpression([
+      this.createAssignmentExpression(
+        tmpYieldIdentifier,
+        this.createCallExpression(
+          this.createIdentifier(EXECUTOR_BREAK_NAME),
+          params
         )
-      ]);
-    }
+      ),
+      this.createLogicalExpression(
+        tmpYieldIdentifier, '&&',
+        this.createYieldExpression(tmpYieldIdentifier, false)
+      )
+    ]);
   }
 
   // 创建作用域所需变量声明
