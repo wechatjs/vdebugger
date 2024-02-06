@@ -26,14 +26,17 @@
         "  const [color, setColor] = React.useState(false);\n" +
         "  const boxStyle = { height: '100px', border: '1px solid red', background: color ? 'blue' : 'white' };\n" +
         "  const onClick = () => {\n" +
+        "    console.time('click');\n" +
         "    setColor(c => !c);\n" +
-        "    alert(!color);\n" +
         "  };\n" +
+        "  React.useLayoutEffect(() => { console.timeEnd('click') })\n" +
         "  return React.createElement('div', null, React.createElement('div', {\n" +
         "    id: 'box', className: 'box', style: boxStyle, onClick\n" +
         "  }));\n" +
         "}\n" +
-        "ReactDOM.createRoot(document.getElementById('app')).render(React.createElement(App));", window.debugFile
+        "console.time('render');\n" +
+        "ReactDOM.createRoot(document.getElementById('app')).render(React.createElement(App));\n" +
+        "console.timeEnd('render');", window.debugFile
       )();
     })();
   </script>
