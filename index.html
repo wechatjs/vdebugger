@@ -26,8 +26,10 @@
         "  const [color, setColor] = React.useState(false);\n" +
         "  const boxStyle = { height: '100px', border: '1px solid red', background: color ? 'blue' : 'white' };\n" +
         "  const onClick = () => {\n" +
+        "    console.time('click');\n" +
         "    setColor(c => !c);\n" +
         "  };\n" +
+        "  React.useLayoutEffect(() => { console.timeEnd('click') })\n" +
         "  return React.createElement('div', null, React.createElement('div', {\n" +
         "    id: 'box', className: 'box', style: boxStyle, onClick\n" +
         "  }));\n" +
@@ -44,7 +46,7 @@
       panel.style.cssText = 'background: #f7f7f7; padding: 12px; position: fixed; bottom: 0; left: 0; right: 0';
       panel.innerHTML = '<div style="display: flex">' +
           '<input id="debug_file" style="flex: 4; margin-right: 2px" placeholder="File" value="' + window.debugFile + '">' +
-          '<input id="debug_line" style="flex: 1; margin-right: 2px; min-width: 24px" placeholder="Line" value="5">' +
+          '<input id="debug_line" style="flex: 1; margin-right: 2px; min-width: 24px" placeholder="Line" value="6">' +
           '<button id="debug_break" style="flex: 1; margin-right: 2px">Break</button>' +
           '<button id="debug_resume" style="flex: 1" disabled>Resume</button>' +
         '</div>' +
@@ -57,7 +59,7 @@
         '<div id="debug_console" style="border-radius: 2px; background: white; font-size: 14px; margin-bottom: 16px; margin-top: 4px; min-height: 20px; max-height: 60px; padding: 2px 6px; overflow: scroll">' +
         '</div>';
       document.body.insertBefore(panel, document.body.firstChild);
-      let fileStr = window.debugFile, lineStr = '5', exprStr = 'color';
+      let fileStr = window.debugFile, lineStr = '6', exprStr = 'color';
       document.getElementById('debug_file').addEventListener('input', (e) => fileStr = e.target.value);
       document.getElementById('debug_line').addEventListener('input', (e) => lineStr = e.target.value);
       document.getElementById('debug_expr').addEventListener('input', (e) => exprStr = e.target.value);
