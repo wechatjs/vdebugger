@@ -54,7 +54,7 @@ export default class Transformer {
         Object.assign(node, this.createExpressionStatement(
           this.createBreakpointExpression(node)
         ));
-        const breakpointId = node?.expression?.argument?.arguments?.[1]?.value;
+        const breakpointId = node?.expression?.expressions?.[0]?.right?.arguments?.[1]?.value;
         if (breakpointId) {
           Transformer.breakpointMap.set(breakpointId, true);
         }
@@ -212,12 +212,22 @@ export default class Transformer {
         });
       }
     }
-    return this.createYieldExpression(
-      this.createCallExpression(
-        this.createIdentifier(EXECUTOR_BREAK_NAME),
-        params
-      ), false
+    const checkCallExpr = this.createCallExpression(
+      this.createIdentifier(EXECUTOR_BREAK_NAME),
+      params
     );
+    if (blocker) {
+      return this.createYieldExpression(checkCallExpr, false);
+    } else {
+      const tmpYieldIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 'y');
+      return this.createSequenceExpression([
+        this.createAssignmentExpression(tmpYieldIdentifier, checkCallExpr ),
+        this.createLogicalExpression(
+          tmpYieldIdentifier, '&&',
+          this.createYieldExpression(tmpYieldIdentifier, false)
+        )
+      ]);
+    }
   }
 
   // 创建作用域所需变量声明
@@ -226,6 +236,7 @@ export default class Transformer {
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'o'), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'f'), null),
+      this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'y'), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 't'), this.createThisExpression()),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'a'), this.createIdentifier('arguments')),
       this.createVariableDeclarator(this.createIdentifier(NEW_TARGET_NAME),
@@ -236,15 +247,13 @@ export default class Transformer {
 
   // 转换入口，插入断点
   transformProgram(node) {
-    const cookedBody = [];
-    node.body.forEach((bodyNode) => cookedBody.push(
+    node.body = [].concat(...node.body.map((bodyNode) => [
       // 给每个语句前都插入断点
       this.createExpressionStatement(
         this.createBreakpointExpression(bodyNode)
       ),
       bodyNode
-    ));
-    node.body = cookedBody;
+    ]));
   }
 
   // 转换块级语句，插入断点，记录scope eval等信息
