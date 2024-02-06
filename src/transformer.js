@@ -54,7 +54,7 @@ export default class Transformer {
         Object.assign(node, this.createExpressionStatement(
           this.createBreakpointExpression(node)
         ));
-        const breakpointId = node?.expression?.argument?.arguments?.[1]?.value;
+        const breakpointId = node?.expression?.expressions?.[0]?.left?.right.arguments?.[1]?.value;
         if (breakpointId) {
           Transformer.breakpointMap.set(breakpointId, true);
         }
@@ -201,7 +201,7 @@ export default class Transformer {
       this.createLiteral(node.loc.start.column)
     ];
     if (blocker) {
-      params.push(this.createLiteral(blocker));
+      params.push(this.createLiteral(1));
     } else {
       const lineBreakpointIds = this.lineBreakpointIdsMap.get(node.loc.start.line);
       if (lineBreakpointIds) {
@@ -212,12 +212,19 @@ export default class Transformer {
         });
       }
     }
-    return this.createYieldExpression(
-      this.createCallExpression(
-        this.createIdentifier(EXECUTOR_BREAK_NAME),
-        params
-      ), false
-    );
+    const tmpYieldIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 'y');
+    return this.createSequenceExpression([
+      this.createLogicalExpression(
+        this.createAssignmentExpression(
+          tmpYieldIdentifier,
+          this.createCallExpression(
+            this.createIdentifier(EXECUTOR_BREAK_NAME),
+            params
+          )
+        ),
+        '&&', this.createYieldExpression(tmpYieldIdentifier, false)
+      )
+    ]);
   }
 
   // 创建作用域所需变量声明
@@ -226,6 +233,7 @@ export default class Transformer {
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'o'), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'f'), null),
+      this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'y'), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 't'), this.createThisExpression()),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'a'), this.createIdentifier('arguments')),
       this.createVariableDeclarator(this.createIdentifier(NEW_TARGET_NAME),
@@ -236,15 +244,13 @@ export default class Transformer {
 
   // 转换入口，插入断点
   transformProgram(node) {
-    const cookedBody = [];
-    node.body.forEach((bodyNode) => cookedBody.push(
+    node.body = [].concat(...node.body.map((bodyNode) => [
       // 给每个语句前都插入断点
       this.createExpressionStatement(
         this.createBreakpointExpression(bodyNode)
       ),
       bodyNode
-    ));
-    node.body = cookedBody;
+    ]));
   }
 
   // 转换块级语句，插入断点，记录scope eval等信息
@@ -278,6 +284,21 @@ export default class Transformer {
         }
       });
     }
+    const scopeInitCallExpr = this.createCallExpression(
+      this.createIdentifier(SCOPE_TRACER_NAME),
+      [
+        this.createLiteral(true),
+        this.createFunctionExpression(
+          this.createCallExpression(
+            this.createIdentifier('eval'),
+            [this.createIdentifier('x')]
+          ),
+          [this.createIdentifier('x')],
+          'ArrowFunctionExpression', false
+        ),
+        scopeNameIdentifier
+      ]
+    );
     const cookedBody = [
       ...(
         assignmentPatternParamsDeclarators.length
@@ -285,24 +306,10 @@ export default class Transformer {
           : []
       ),
       this.createExpressionStatement(
-        this.createSequenceExpression([
+        isFunction ? this.createSequenceExpression([
           this.createBreakpointExpression(node, true),
-          this.createCallExpression(
-            this.createIdentifier(SCOPE_TRACER_NAME),
-            [
-              this.createLiteral(true),
-              this.createFunctionExpression(
-                this.createCallExpression(
-                  this.createIdentifier('eval'),
-                  [this.createIdentifier('x')]
-                ),
-                [this.createIdentifier('x')],
-                'ArrowFunctionExpression', false
-              ),
-              scopeNameIdentifier
-            ]
-          )
-        ])
+          scopeInitCallExpr
+        ]) : scopeInitCallExpr
       )
     ].concat(...node.body.map((bodyNode) => [
       // 给每个语句前都插入断点
