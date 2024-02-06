@@ -8,8 +8,8 @@ const axios = require('axios');
   eval(res.data);
   console.timeEnd('evalTime');
 
-  console.time('debugTime');
   const run = vDebugger.debug(res.data, 'https://react.test/react.js');
+  console.time('debugTime');
   run();
   console.timeEnd('debugTime');
 })();

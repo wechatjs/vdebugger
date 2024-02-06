@@ -54,7 +54,7 @@ export default class Transformer {
         Object.assign(node, this.createExpressionStatement(
           this.createBreakpointExpression(node)
         ));
-        const breakpointId = node?.expression?.expressions?.[0]?.right?.arguments?.[1]?.value;
+        const breakpointId = node?.expression?.expressions?.[0]?.left?.right.arguments?.[1]?.value;
         if (breakpointId) {
           Transformer.breakpointMap.set(breakpointId, true);
         }
@@ -214,16 +214,15 @@ export default class Transformer {
     }
     const tmpYieldIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 'y');
     return this.createSequenceExpression([
-      this.createAssignmentExpression(
-        tmpYieldIdentifier,
-        this.createCallExpression(
-          this.createIdentifier(EXECUTOR_BREAK_NAME),
-          params
-        )
-      ),
       this.createLogicalExpression(
-        tmpYieldIdentifier, '&&',
-        this.createYieldExpression(tmpYieldIdentifier, false)
+        this.createAssignmentExpression(
+          tmpYieldIdentifier,
+          this.createCallExpression(
+            this.createIdentifier(EXECUTOR_BREAK_NAME),
+            params
+          )
+        ),
+        '&&', this.createYieldExpression(tmpYieldIdentifier, false)
       )
     ]);
   }
