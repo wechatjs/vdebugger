@@ -10,13 +10,15 @@ Macbook Pro 2021
 - React Demo页点击事件处理 (Chrome 121)
 
 原生：
-- 0.21ms
-- 1.76ms
+- 0.2ms
+- 1.8ms
 - 
 - 
 
 原始：
 - 
-- 
-- 6.4ms
-- 11.5ms
+- 11.1ms
+- 10.6ms
+- 6.2ms
+
+优化：
