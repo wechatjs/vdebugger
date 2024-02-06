@@ -284,6 +284,21 @@ export default class Transformer {
         }
       });
     }
+    const scopeInitCallExpr = this.createCallExpression(
+      this.createIdentifier(SCOPE_TRACER_NAME),
+      [
+        this.createLiteral(true),
+        this.createFunctionExpression(
+          this.createCallExpression(
+            this.createIdentifier('eval'),
+            [this.createIdentifier('x')]
+          ),
+          [this.createIdentifier('x')],
+          'ArrowFunctionExpression', false
+        ),
+        scopeNameIdentifier
+      ]
+    );
     const cookedBody = [
       ...(
         assignmentPatternParamsDeclarators.length
@@ -291,24 +306,10 @@ export default class Transformer {
           : []
       ),
       this.createExpressionStatement(
-        this.createSequenceExpression([
+        isFunction ? this.createSequenceExpression([
           this.createBreakpointExpression(node, true),
-          this.createCallExpression(
-            this.createIdentifier(SCOPE_TRACER_NAME),
-            [
-              this.createLiteral(true),
-              this.createFunctionExpression(
-                this.createCallExpression(
-                  this.createIdentifier('eval'),
-                  [this.createIdentifier('x')]
-                ),
-                [this.createIdentifier('x')],
-                'ArrowFunctionExpression', false
-              ),
-              scopeNameIdentifier
-            ]
-          )
-        ])
+          scopeInitCallExpr
+        ]) : scopeInitCallExpr
       )
     ].concat(...node.body.map((bodyNode) => [
       // 给每个语句前都插入断点
