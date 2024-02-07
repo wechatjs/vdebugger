@@ -44,11 +44,13 @@ function breaker(...args) {
  * @param {Any} value 当前值
  */
 function isBreaker(value) {
-  try {
-    // 之所以要包一层try catch，是因为value有可能是iframe.contentWindow，直接获取的时候会导致跨域报错
-    return value?.[EXECUTOR_BREAK_NAME]?.length;
-  } catch (err) {
-    return false;
+  if (value && typeof value === 'object') {
+    try {
+      // 之所以要包一层try catch，是因为value有可能是iframe.contentWindow，直接获取的时候会导致跨域报错
+      return value[EXECUTOR_BREAK_NAME]?.length;
+    } catch (err) {
+      return false;
+    }
   }
 }
 
