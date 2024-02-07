@@ -83,7 +83,7 @@ function checkIfBreak(debuggerId, breakpointId, lineNumber, columnNumber, scopeB
         // 如果当前禁用了断点，那么继续执行
         return;
       }
-      const condition = Transformer.breakpointMap.get(breakpointId);
+      const condition = Transformer.breakpointMap.size && Transformer.breakpointMap.get(breakpointId);
       if (!condition && ['stepInto', 'stepOver', 'stepOut'].indexOf(resumeOptions?.type) === -1) {
         // 如果没有命中断点，并且不是单步调试，那么继续执行
         return;
