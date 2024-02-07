@@ -145,6 +145,7 @@ export default class Transformer {
       'try{' +
         'return yield* (function* () {' +
           `${SCOPE_TRACER_NAME}(true,x=>eval(x),'(global)');` +
+          `let ${TMP_VARIABLE_NAME}o,${TMP_VARIABLE_NAME}f,${TMP_VARIABLE_NAME}y;` +
           `${generate(ast, process.env.NODE_ENV === 'production' ? { indent: '', lineEnd: '' } : {})}` +
         '})()' +
       '}finally{' +
@@ -231,9 +232,6 @@ export default class Transformer {
   createScopeVariableDeclarators() {
     return [
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME), null),
-      this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'o'), null),
-      this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'f'), null),
-      this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'y'), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 't'), this.createThisExpression()),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'a'), this.createIdentifier('arguments')),
       this.createVariableDeclarator(this.createIdentifier(NEW_TARGET_NAME),
