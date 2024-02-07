@@ -293,6 +293,9 @@ function scope(push, scopeEval, scopeName) {
     Scope.chain.push(new Scope(scopeEval, scopeName));
   } else {
     Scope.lastPop = Scope.chain.pop();
+    if (Scope.lastPop === Scope.curNamedScope) {
+      Scope.curNamedScope = null;
+    }
     if (Scope.chain.length < 2) { // 只剩下全局作用域(length:1)或没有在执行(length:0)
       // 如果有定义断点恢复设置，callFrameId设为极大，当前过程跑完后，保证能在下个循环中断住
       resumeOptions && (resumeOptions.callFrameId = Number.MAX_SAFE_INTEGER);

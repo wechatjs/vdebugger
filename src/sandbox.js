@@ -84,7 +84,7 @@ export function wrapProtoMethod(executor) {
     if (typeof reducer === 'function' && funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
       return executor((function* (array) {
         let result = init;
-        for (let i = array.length - 1; i > -1; i--) result = yield reducer(result, array[i], i, array);
+        for (let i = array.length - 1; i !== -1; i--) result = yield reducer(result, array[i], i, array);
         return result;
       })(this));
     }
