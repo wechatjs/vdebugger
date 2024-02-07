@@ -28,9 +28,9 @@
   "author": "siubaak",
   "license": "MIT",
   "dependencies": {
-    "acorn-walk": "^8.2.0",
-    "astring": "^1.8.3",
-    "meriyah": "^4.3.0"
+    "acorn-walk": "^8.3.2",
+    "astring": "^1.8.6",
+    "meriyah": "^4.3.9"
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",
