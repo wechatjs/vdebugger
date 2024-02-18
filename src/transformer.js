@@ -231,7 +231,6 @@ export default class Transformer {
   // 创建作用域所需变量声明
   createScopeVariableDeclarators() {
     return [
-      this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME), null),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 't'), this.createThisExpression()),
       this.createVariableDeclarator(this.createIdentifier(TMP_VARIABLE_NAME + 'a'), this.createIdentifier('arguments')),
       this.createVariableDeclarator(this.createIdentifier(NEW_TARGET_NAME),
