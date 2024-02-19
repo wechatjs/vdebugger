@@ -93,6 +93,9 @@ describe('breakpoint tests', () => {
     const pausedInfo = vDebugger.getPausedInfo();
     expect(pausedInfo).toBeTruthy();
     expect(pausedInfo.lineNumber).toEqual(breakLine);
+    expect(pausedInfo.scopeChain.length).toEqual(2);
+    expect(pausedInfo.scopeChain[1].callFrame).toBeTruthy();
+    expect(pausedInfo.scopeChain[1].callFrame.lineNumber).toEqual(breakLine);
     expect(window.__trans_res__).toEqual(6);
 
     const resumeRes = vDebugger.resume();

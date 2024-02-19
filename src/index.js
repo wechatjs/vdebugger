@@ -292,11 +292,15 @@ function executor(generator, result) {
  */
 function scope(push, scopeEval, scopeName) {
   if (push) {
-    Scope.chain.push(new Scope(scopeEval, scopeName));
+    const scope = new Scope(scopeEval, scopeName);
+    Scope.chain.push(scope);
+    if (scopeName) {
+      Scope.curNamedScope = scope;
+    }
   } else {
     Scope.lastPop = Scope.chain.pop();
-    if (Scope.lastPop === Scope.curNamedScope) {
-      Scope.curNamedScope = null;
+    if (Scope.lastPop.name) {
+      Scope.curNamedScope = Scope.getSpecifiedScope((scope) => !!scope.name);
     }
     if (Scope.chain.length < 2) { // 只剩下全局作用域(length:1)或没有在执行(length:0)
       // 如果有定义断点恢复设置，callFrameId设为极大，当前过程跑完后，保证能在下个循环中断住

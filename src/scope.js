@@ -30,10 +30,6 @@ export default class Scope {
   }
 
   static updateCallFrame(callFrame) {
-    const scope = Scope.curNamedScope || Scope.getSpecifiedScope((scope) => !!scope.name);
-    if (scope) {
-      scope.callFrame = callFrame;
-      Scope.curNamedScope = scope;
-    }
+    Scope.curNamedScope && (Scope.curNamedScope.callFrame = callFrame);
   }
 }
