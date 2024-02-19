@@ -141,9 +141,7 @@ describe('breakpoint tests', () => {
     expect(pausedInfo).toBeTruthy();
     expect(pausedInfo.lineNumber).toEqual(breakLine);
 
-    const scopeChain = vDebugger.getScopeChain();
-    const curScope = scopeChain.pop();
-    const value = vDebugger.evaluate('a', curScope.callFrameId);
+    const value = vDebugger.evaluate('a');
     expect(value).toEqual(999);
 
     const resumeRes = vDebugger.resume();
@@ -221,8 +219,8 @@ describe('breakpoint tests', () => {
     expect(pausedInfo.lineNumber).toEqual(breakLine);
 
     const scopeChain = vDebugger.getScopeChain();
-    const curScope = scopeChain.pop();
-    
+    const curScope = scopeChain[scopeChain.length - 1];
+
     const value = vDebugger.runInSkipOver(() => {
       return vDebugger.evaluate('a()', curScope.callFrameId);
     });
