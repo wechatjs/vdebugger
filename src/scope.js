@@ -11,11 +11,14 @@ export default class Scope {
   }
 
   static getSpecifiedScope(check) {
-    for (let i = Scope.chain.length - 1; i !== -1; i--) {
-      if (check(Scope.chain[i])) {
-        return Scope.chain[i];
+    const chain = Scope.chain;
+    const len = chain.length;
+    for (let i = len - 1; i !== -1; i--) {
+      if (check(chain[i])) {
+        return chain[i];
       }
     }
+    return chain[len - 1];
   }
 
   static getScopeByCallFrameId(callFrameId) {
