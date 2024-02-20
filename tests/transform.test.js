@@ -44,8 +44,8 @@ describe('compiler tests', () => {
 
   it('compile chain expression normally', () => {
     const res = vDebugger.transform(
-      'const a = { b: () => 7 }\n' +
-      'window.__trans_res__ = 6 && a?.b();\n'
+      'const a = { b: { c: () => 7 } }\n' +
+      'window.__trans_res__ = 6 && a?.b.c();\n'
     , 'chain-expr-transform.js');
     expect(res).toBeTruthy();
 

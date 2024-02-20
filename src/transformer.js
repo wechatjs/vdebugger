@@ -378,6 +378,8 @@ export default class Transformer {
         );
         return;
       }
+      const grandParentNode = ancestors[ancestors.length - 3];
+      const isOptionalChain = grandParentNode.type === 'ChainExpression';
       const tmpObjIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 'o');
       const tmpFuncIdentifier = this.createIdentifier(TMP_VARIABLE_NAME + 'f');
       Object.assign(parentNode, this.createSequenceExpression([
@@ -387,14 +389,17 @@ export default class Transformer {
         ),
         this.createAssignmentExpression(
           tmpFuncIdentifier,
-          this.createYieldExpression(Object.assign({}, node, { object: tmpObjIdentifier }), false)
+          this.createYieldExpression(
+            isOptionalChain
+              ? this.createChainExpression(Object.assign({}, node, { object: tmpObjIdentifier, optional: true }))
+              : Object.assign({}, node, { object: tmpObjIdentifier })
+          , false)
         ),
         this.createCallExpression(
           this.createCallExpression(
-            this.createMemberExpression(
-              tmpFuncIdentifier,
-              this.createIdentifier('bind')
-            ),
+            isOptionalChain
+              ? this.createChainExpression(this.createMemberExpression(tmpFuncIdentifier, this.createIdentifier('bind'), true))
+              : this.createMemberExpression(tmpFuncIdentifier, this.createIdentifier('bind')),
             [tmpObjIdentifier]
           ),
           parentNode.arguments
@@ -830,8 +835,13 @@ export default class Transformer {
   }
 
   // 创建对象成员AST节点
-  createMemberExpression(object, property) {
-    return { type: 'MemberExpression', computed: false, optional: false, object, property };
+  createMemberExpression(object, property, optional = false) {
+    return { type: 'MemberExpression', computed: false, optional, object, property };
+  }
+
+  // 创建可选链表达式AST节点
+  createChainExpression(expression) {
+    return { type: 'ChainExpression', expression };
   }
 
   // 创建序列表达式AST节点
