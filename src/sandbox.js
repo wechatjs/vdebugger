@@ -83,14 +83,19 @@ export function wrapProtoMethod(executor) {
   };
 
   Array.prototype.reduceRight = function reduceRight(reducer, init) {
+    const hasInit = arguments.length > 1;
     if (typeof reducer === 'function' && funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
-      return executor((function* (array) {
-        let result = init;
-        for (let i = array.length - 1; i !== -1; i--) result = yield reducer(result, array[i], i, array);
+      return executor(function* (array) {
+        let result = hasInit? init : array[array.length - 1];;
+
+        for (let i = hasInit ? array.length - 1: array.length - 2; i !== -1; i--) result = yield reducer(result, array[i], i, array);
+
         return result;
-      })(this));
+      }(this));
     }
-    return oriArrayReduceRight.call(this, reducer, init);
+
+    if(hasInit) return oriArrayReduceRight.call(this, reducer, init);
+    return oriArrayReduceRight.call(this, reducer);
   };
 
   Array.prototype.every = function every(predicate, thisArg) {
