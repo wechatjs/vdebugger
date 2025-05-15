@@ -71,15 +71,15 @@ export function wrapProtoMethod(executor) {
 
   Array.prototype.reduce = function reduce(reducer, init) {
     const hasInit = arguments.length > 1;
-      if (typeof reducer === 'function' && funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
-        return executor(function* (array) {
-          let result = hasInit? init : array[0];
-          for (let i = hasInit ? 0 : 1; i < array.length; i++) result = yield reducer(result, array[i], i, array);
-          return result;
-        }(this));
-      }
-      if(hasInit) return oriArrayReduce.call(this, reducer, init);
-      return oriArrayReduce.call(this, reducer);
+    if (typeof reducer === 'function' && funcToString.call(reducer).indexOf(FUNC_MARK) !== -1) {
+      return executor(function* (array) {
+        let result = hasInit ? init : array[0];
+        for (let i = hasInit ? 0 : 1; i < array.length; i++) result = yield reducer(result, array[i], i, array);
+        return result;
+      }(this));
+    }
+    if (hasInit) return oriArrayReduce.call(this, reducer, init);
+    return oriArrayReduce.call(this, reducer);
   };
 
   Array.prototype.reduceRight = function reduceRight(reducer, init) {
